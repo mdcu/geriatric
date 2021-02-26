@@ -19,5 +19,13 @@ updated: 26 February 2021
 * global assessment of active participation, communication, manner โดยอาจารย์และทีมสหสาขา
 
 ## Preparation
-* นิสิตทุกคนควรศึกษาเอกสารล่วงหน้ามาก่อนดังนี้
-  * 
+* เนื้อหาที่นิสิตทุกคน __ต้อง__ ศึกษาล่วงหน้ามาก่อนมีดังนี้
+ * แบบประเมิน Basic activities of daily living (Barthel index)[http://www.lpnh.go.th/lphc/file/bathel.pdf]
+ * protocol การตรวจ Short Physical Performance Battery Test (SPPB)[https://drive.google.com/file/d/1B0e3Ip_lducG-mOMOLzATt7JhSr27hBF/view?usp=sharing] (ฟอร์มของคลินิก)[https://drive.google.com/file/d/1sfv7WJ-FwurK1cU3jWGYN4Yp0XS6tdfb/view?usp=sharing]
+ * คำแนะนำโภชนาการสำหรับผู้สูงวัย (video)[https://www.youtube.com/watch?v=10_C_YOslQA]
+ * บทบาทของนักสงคมสงเคราะห์ (PDF แผ่นพับ)[https://drive.google.com/file/d/1uQNsLYD_kTIAJ1IzMjzxBsUAGh2T9zyf/view?usp=sharing] (video)[https://www.youtube.com/watch?v=0yI4qnuhlLc]
+* เนื้อหา optional __ควร__ ศึกษาล่วงหน้าหรือในภายหลัง
+ * คลิปอื่น ๆ (youtube channel)[https://www.youtube.com/channel/UCUNk1fPbKpbJQ9SJ7N4yjnQ] _อย่าลืมกด like กด share กดสับตะไคร้นะครับ 555_
+ * เอกสารคำสอน (google doc)[https://docs.google.com/document/d/1Y4Ql2DKXxf9FnU6fETwhfyXsUT6D5FLlHcq5fuZU20s/edit?usp=sharing]
+ * ลักษณะอาหารเหลว (PDF)[https://drive.google.com/file/d/1bhF3rStkO-1-MhlTxud4R6z2X9XOr0CV/view?usp=sharing]
+ * resource falls prevention (STEADI by CDC)[https://www.cdc.gov/steadi/index.html]
