@@ -30,3 +30,5 @@ updated: 26 February 2021
   *  เอกสารคำสอน [google doc](https://docs.google.com/document/d/1Y4Ql2DKXxf9FnU6fETwhfyXsUT6D5FLlHcq5fuZU20s/edit?usp=sharing)
   *  ลักษณะอาหารเหลว [PDF](https://drive.google.com/file/d/1bhF3rStkO-1-MhlTxud4R6z2X9XOr0CV/view?usp=sharing)
   *  resource falls prevention [STEADI by CDC](https://www.cdc.gov/steadi/index.html)
+  *  Brochure การแนะนำอาหาร [PDF](https://github.com/mdcu/geriatric/blob/main/FCC/dietitians%20brochure.pdf)
+
