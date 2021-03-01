@@ -8,12 +8,16 @@ updated: 26 February 2021
 
 ## Activity
 * สถานที่ คลินิกผู้สูงวัยสุขภาพดี ส.ธ. 4
-* นิสิตในแต่ละวันแบ่งเป็น 4 กลุ่ม กลุ่มละ 11-13 คน  [ดูรายชื่อ](https://docs.google.com/spreadsheets/d/e/2PACX-1vQAepHby07esWRcnMZhwhnIKo0zBhw60BRkIh8KEdLOS5624nzXQlDPQAYPOSi6XQ/pubhtml)
+* นิสิตในแต่ละวันแบ่งเป็น 4 กลุ่ม กลุ่มละ 11-13 คน  [ดูรายชื่อ](https://docs.google.com/document/d/1qZgM6R8jzXHuT0juDWjDTfZDIRbtUIGabSMB8jXhGyU/edit?usp=sharing) ขอให้ดูว่าตนเองเริ่มที่ฐานไหนเพื่อไปเริ่มต้นให้ถูกต้อง
 * กิจกรรมแบบ workshop 4 ฐาน ฐานละ 35 นาที ประกอบด้วย
   *  ฐาน activities of daily living โดยทีมนักกิจกรรมบำบัด (occupational therapist)
   *  ฐาน falls and poor mobility โดยทีมนักกายภาพบำบัด (physical therapist)
   *  ฐาน nutritional care โดยทีมนักกำหนดอาหาร (dietitian)
   *  ฐาน psychosocial issue โดยทีมนักสังคมสงเคราะห์คลินิก (cinical social worker)
+
+*แผนที่บริเวณสธ4*
+![image](https://user-images.githubusercontent.com/67822332/109493588-4fbc1300-7abf-11eb-842c-4cd3859efe96.png)
+
  
 ## Evaluation
 * global assessment of active participation, communication, manner โดยอาจารย์และทีมสหสาขา
