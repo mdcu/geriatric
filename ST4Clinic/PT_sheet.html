@@ -47,17 +47,18 @@ C = function(){
 	I("balanceSum").value = balanceSum
 	
 	let gaitSum = 0
-	let gait1 = I("gait1").value === "" ? "" : +I("gait1").value
-	let gait2 = I("gait2").value === "" ? "" : +I("gait2").value
-	if(gait1==="" || gait2 ===""){
+	let gait1 = I("gait1").value === "" ? 999 : +I("gait1").value
+	let gait2 = I("gait2").value === "" ? 999 : +I("gait2").value
+	console.log(gait1,gait2)
+	if(gait1==999 && gait2 ==999){
 		console.log("gait speed not ready")
 	}else{
 		let gaitS = gait1 < gait2 ? gait1 : gait2
 		
-		if(gaitS<=4.82)gaitSum=4
-		if(gaitS<=6.20)gaitSum=3
-		if(gaitS<=8.70)gaitSum=2
 		if(gaitS>8.70)gaitSum=1
+		if(gaitS<=8.70)gaitSum=2
+		if(gaitS<=6.20)gaitSum=3
+		if(gaitS<=4.82)gaitSum=4
 	}
 	I("gaitSum").value = gaitSum
 
@@ -66,11 +67,11 @@ C = function(){
 	if(chairS ===""){
 		console.log("chair5 not ready")
 	}else{
-		if(chairS<=11.19)chairSum = 4
-		if(chairS<=13.69)chairSum = 3
-		if(chairS<=16.69)chairSum = 2
 		if(chairS>=16.70)chairSum = 1
 		if(chairS>60)chairSum = 0
+		if(chairS<=16.69)chairSum = 2
+		if(chairS<=13.69)chairSum = 3
+		if(chairS<=11.19)chairSum = 4
 		I("chair5Sum").value = chairSum
 	}
 
