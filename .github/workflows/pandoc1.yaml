@@ -1,0 +1,19 @@
+
+
+
+
+
+name: pandoc_ebook
+
+on: push
+
+jobs:
+  convert_via_pandoc:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          cd ebook/cancer_screening/
+      - uses: docker://pandoc/core:2.9
+          with:
+            args: "*.md > test.md"
