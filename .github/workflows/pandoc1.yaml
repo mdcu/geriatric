@@ -14,6 +14,13 @@ jobs:
       - uses: docker://pandoc/core:2.9
         with:
           args: >-
-            --output=test.md
+            --output=ebook/cancer_screening/test.md
             ebook/cancer_screening/000-intro.md
             ebook/cancer_screening/001-colorectal.md
+      - run: git config --local user.email "action@github.com"
+      - run: git config --local user.name "GitHub Action"
+      - run: git add ebook
+      - run: git commit -m "action update"
+      - run: "git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
