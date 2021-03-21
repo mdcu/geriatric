@@ -11,7 +11,9 @@ jobs:
       - uses: actions/checkout@master
       - run: cd ebook/cancer_screening/
       - run: ls ebook/cancer_screening/
-      - run: mkdir output
-      - uses: maxheld83/pandoc-action@v2
+      - uses: docker://pandoc/core:2.9
         with:
-          args: --output=output/test.md "ebook/cancer_screening/000-intro.md ebook/cancer_screening/001-colorectal.md"
+          args: >-
+            --output=test.md
+            ebook/cancer_screening/000-intro.md
+            ebook/cancer_screening/001-colorectal.md
