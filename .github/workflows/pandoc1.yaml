@@ -5,6 +5,8 @@ on:
 jobs:
   convert_via_pandoc:
     runs-on: ubuntu-18.04
+    env: 
+      working-directory: ./ebook/cancer_screening
     steps:
       #- run: cd ebook/cancer_screening/
       - run: dir
