@@ -9,7 +9,7 @@ jobs:
     #  working-directory: ./ebook/cancer_screening
     steps:
       #- run: cd ebook/cancer_screening/
-      - run: dir ebook/cancer_screening/
+      - run: dir /github/workspace/ebook/cancer_screening/
       - uses: docker://pandoc/core:2.9
         with:
-          args: "ebook/cancer_screening/000-intro.md ebook/cancer_screening/001-colorectal.md > ebook/cancer_screening/test.md"
+          args: "/github/workspace/ebook/cancer_screening/000-intro.md /github/workspace/ebook/cancer_screening/001-colorectal.md > /github/workspace/ebook/cancer_screening/test.md"
