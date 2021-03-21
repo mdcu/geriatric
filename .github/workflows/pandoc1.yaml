@@ -8,5 +8,5 @@ jobs:
     #env: 
     #  working-directory: ./ebook/cancer_screening
     steps:
-      - uses: actions/checkout@master
+      #- uses: actions/checkout@master
       - run: ls
