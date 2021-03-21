@@ -9,4 +9,4 @@ jobs:
     #  working-directory: ./ebook/cancer_screening
     steps:
       - uses: actions/checkout@master
-      - run: echo ls
+      - run: ls
