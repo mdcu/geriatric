@@ -12,7 +12,7 @@ jobs:
       - uses: docker://pandoc/core:2.9 # for non-latex pandoc utility
         with:
           args: >- # for multiple lines
-            --output=ebook/cancer_screening/test.md # output follow by each input // *.md not work here
+            --output=ebook/cancer_screening/index.md # output follow by each input // *.md not work here
             ebook/cancer_screening/000-intro.md 
             ebook/cancer_screening/001-colorectal.md
       - run: git config --local user.email "action@github.com"
