@@ -9,4 +9,4 @@ jobs:
     #  working-directory: ./ebook/cancer_screening
     steps:
       #- run: cd ebook/cancer_screening/
-      - run: echo ls > test.txt
+      - run: echo ls
