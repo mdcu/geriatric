@@ -13,4 +13,4 @@ jobs:
       - run: ls ebook/cancer_screening/
       - uses: maxheld83/pandoc-action@v2
         with:
-          args: "ebook/cancer_screening/000-intro.md ebook/cancer_screening/001-colorectal.md"
+          args: --output=output/test.md "ebook/cancer_screening/000-intro.md ebook/cancer_screening/001-colorectal.md"
