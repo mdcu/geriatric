@@ -10,6 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - run: cd ebook/cancer_screening/
-      - run: ls
+      - run: ls ebook/cancer_screening/
       - uses: maxheld83/pandoc-action@v2
-      - run: pandoc *.md > test.md
+      - run: pandoc ebook/cancer_screening/000-intro.md ebook/cancer_screening/001-colorectal.md > test.md
