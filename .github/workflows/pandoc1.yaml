@@ -12,4 +12,4 @@ jobs:
       - run: dir
       - uses: docker://pandoc/core:2.9
         with:
-          args: "*.md"
+          args: "000-intro.md 001-colorectal.md > test.md"
