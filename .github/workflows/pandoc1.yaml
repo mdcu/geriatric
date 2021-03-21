@@ -1,7 +1,7 @@
 
 name: pandoc_ebook
 
-on: push
+on: workflow_dispatch:
 
 jobs:
   convert_via_pandoc:
