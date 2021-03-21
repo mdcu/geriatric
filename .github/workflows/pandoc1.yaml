@@ -5,22 +5,20 @@ on:
 jobs:
   convert_via_pandoc:
     runs-on: ubuntu-18.04
-    #env: 
-    #  working-directory: ./ebook/cancer_screening
     steps:
-      - uses: actions/checkout@master
-      - run: cd ebook/cancer_screening/
-      - run: ls ebook/cancer_screening/
-      - uses: docker://pandoc/core:2.9
+      - uses: actions/checkout@master # this step is required to access main branch
+      #- run: cd ebook/cancer_screening/ # not really work
+      #- run: ls ebook/cancer_screening/ # work
+      - uses: docker://pandoc/core:2.9 # for non-latex pandoc utility
         with:
-          args: >-
-            --output=ebook/cancer_screening/test.md
-            ebook/cancer_screening/000-intro.md
+          args: >- # for multiple lines
+            --output=ebook/cancer_screening/test.md # output follow by each input // *.md not work here
+            ebook/cancer_screening/000-intro.md 
             ebook/cancer_screening/001-colorectal.md
       - run: git config --local user.email "action@github.com"
       - run: git config --local user.name "GitHub Action"
-      - run: git add ebook
-      - run: git commit -m "action update"
+      - run: git add ebook # change add argument to match desire
+      - run: git commit -m "action update" # comment responsibly
       - run: "git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
