@@ -5,11 +5,11 @@ on:
 jobs:
   convert_via_pandoc:
     runs-on: ubuntu-18.04
-    env: 
-      working-directory: ./ebook/cancer_screening
+    #env: 
+    #  working-directory: ./ebook/cancer_screening
     steps:
       #- run: cd ebook/cancer_screening/
-      - run: dir
+      #- run: dir
       - uses: docker://pandoc/core:2.9
         with:
-          args: "000-intro.md 001-colorectal.md > test.md"
+          args: "./ebook/cancer_screening/000-intro.md ./ebook/cancer_screening/001-colorectal.md > ./ebook/cancer_screening/test.md"
