@@ -8,5 +8,8 @@ jobs:
     #env: 
     #  working-directory: ./ebook/cancer_screening
     steps:
-      #- uses: actions/checkout@master
+      - uses: actions/checkout@master
+      - run: cd /ebook/cancer_screening/
       - run: ls
+      - uses: maxheld83/pandoc-action@v2
+      - run: pandoc *.md > test.md
