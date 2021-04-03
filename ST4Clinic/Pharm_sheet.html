@@ -1,0 +1,248 @@
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<style>
+
+* {box-sizing:border-box;margin:0;}
+
+div{border:0px solid gray;padding:0.5em;}
+.rowFlex {display:flex;border: 1px solid black;}
+
+
+textarea{resize:vertical;overflow:hidden;}
+input, select, textarea {font-size:14px; border-top:0px solid; border-right: 0px solid; border-left:0px solid;}
+.colFlex1 {flex:1;}
+.colFlex2 {flex:2;}
+
+h1, h2, h3, h4 {margin-top:1em;margin-bottom:0em;}
+
+.frame {border:1px solid black;}
+.agent {width:18%;}
+.indication {width:18%;}
+.from {width:10%;}
+.since {width:10%;}
+.order {width:20%;}
+.real {width:20%;}
+
+.page {width:21cm;height:29.7cm;}
+.subpage {padding:0.5cm;height:26.1cm;}
+
+@page {size:A4;margin:0;}
+@media print{
+	html, body, .page	{width:21cm;height:29.7cm;font-size:14px;}
+	.page {page-break-after:always;margin:0;}
+	textarea {placeholder:""}
+
+	*::placeholder {font-size:1px;}
+}
+</style>
+<script>
+
+I = function(id){return(document.getElementById(id))}
+
+C = function(){
+	let balanceA= +document.querySelectorAll("[name=balanceA]:checked")[0].value
+	let balanceB= +document.querySelectorAll("[name=balanceB]:checked")[0].value
+	let balanceC= +document.querySelectorAll("[name=balanceC]:checked")[0].value
+	let balanceSum = balanceA+balanceB+balanceC
+	I("balanceSum").value = balanceSum
+
+	let gaitSum = 0
+	let gait1 = I("gait1").value === "" ? 999 : +I("gait1").value
+	let gait2 = I("gait2").value === "" ? 999 : +I("gait2").value
+	console.log(gait1,gait2)
+	if(gait1==999 && gait2 ==999){
+		console.log("gait speed not ready")
+	}else{
+		let gaitS = gait1 < gait2 ? gait1 : gait2
+
+		if(gaitS>8.70)gaitSum=1
+		if(gaitS<=8.70)gaitSum=2
+		if(gaitS<=6.20)gaitSum=3
+		if(gaitS<=4.82)gaitSum=4
+	}
+	I("gaitSum").value = gaitSum
+
+	let chairSum = 0
+	let chairS = I("chair5").value ==="" ? "": +I("chair5").value
+	if(chairS ===""){
+		console.log("chair5 not ready")
+	}else{
+		if(chairS>=16.70)chairSum = 1
+		if(chairS>60)chairSum = 0
+		if(chairS<=16.69)chairSum = 2
+		if(chairS<=13.69)chairSum = 3
+		if(chairS<=11.19)chairSum = 4
+		I("chair5Sum").value = chairSum
+	}
+
+	let sumSPPB = chairSum + gaitSum + balanceSum
+	I("totalScore").value = sumSPPB
+
+	I("totalResult").innerHTML = sumSPPB
+
+}
+
+X = function(){ //get data
+	let ALL = document.querySelectorAll("*")
+	let tree = {}
+	for(let i = 0; i<ALL.length;i++){
+    		let a = ALL[i]
+    		//console.log(a)
+    		if(a.id){
+        			if(a.type=="checkbox"){
+				tree[a.id]=a.checked
+			}else if(a.value!=undefined)tree[a.id]=a.value
+		}
+    	if(a.name && a.checked)tree[a.name]=a.value
+	}
+	console.log(tree)
+	if(!tree.patientSN){alert("insert SN !!!");return(0);}
+	if(!tree.patientHN){alert("insert HN !!!");return(0);}
+	if(!tree.PTName){alert("insert PT Name !!!");return(0);}
+
+	tree.Year = new Date().getYear() % 100 + 2000
+	tree.Month = new Date().getMonth()+1
+	tree.Date = new Date().getDate()
+	const filename = tree.Year+
+			(tree.Month < 10 ? "0"+tree.Month : tree.Month) +
+			(tree.Date < 10 ? "0"+tree.Date : tree.Date) +
+			"S"+tree.patientSN+
+			"H"+tree.patientHN+
+			".json"
+	const jsonStr = JSON.stringify(tree);
+
+	let element = document.createElement('a');
+	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(jsonStr));
+	element.setAttribute('download', filename);
+
+	element.style.display = 'none';
+	document.body.appendChild(element);
+
+	element.click();
+
+	document.body.removeChild(element);
+}
+
+
+checkDynamic = function(O){
+	let P = O.parentElement
+	console.log(P)
+	if(O.firstElementChild.value !== "" && O == P.lastChild){
+		
+	}else if(O.firstElementChild.value === "" && O !== P.lastChild){
+		console.log(100)
+	}
+}
+
+</script>
+</head>
+<body>
+
+<div class=PAGE><div class=SUBPAGE>
+<h1>Medication Reconcile</h1>
+<div class="rowFlex">
+	<div class="colFlex1"><label>SN: <input id="patientSN"></label></div>
+	<div class="colFlex1"><label>HN: <input id="patientHN"></label></div>
+</div>
+<div class="rowFlex">
+	<div class="colFlex1"><label>Date: <input id="assessDate" type="date"></label></div>
+	<div class="colFlex1"><label>ผู้ที่จัดยาให้: <select id="medArrangeBy">
+		<option value="Self">ตนเอง</option>
+		<option value="Spouse">สามี ภรรยา</option>
+		<option value="Child">ลูก</option>
+		<option value="Relative">ญาติ</option>
+		<option value="Caregiver">ลูกจ้าง</option>
+		<option value="Institute">ศูนย์ฯ</option>
+		<option value="Friend">เพื่อน</option>
+	</select></label></div>
+</div>
+<div class="frame">
+	<h2>Prescription drug</h2>
+	<div class="dynamic">
+		<div class="dynamicRow" onchange="checkDynamic(this)">
+			<input class="agent" placeholder="drug name...">
+			<input class="indication" placeholder="indication for...">
+			<input class="from" placeholder="prscribed from...">
+			<input class="since" placeholder="since when...">
+			<input class="order" placeholder="prescription...">
+			<input class="real" placeholder="patient's take...">
+		</div>
+	</div>
+</div>
+<div>
+	<h2>Non-prescription drug</h2>
+</div>
+</div></div>
+
+
+<div class=PAGE><div class=SUBPAGE id=P2><div>
+
+<h1>รายงานผลทางเวชศาสตร์ฟื้นฟู (กายภาพบำบัด)</h1>
+<h2>คลินิกผู้สูงวัยสุขภาพดี โรงพยาบาลจุฬาลงกรณ์ สภากาชาดไทย</h2>
+<div id=R1 class=rowFlex>
+	<div class=colFlex1>
+	<p>ชื่อ-สกุล</p>
+	<input  onchange="C()"   id=patientSN type=number placeholder="พิมพ์ SN แล้วเอา sticker มาแปะทับ"><br>
+	<input  onchange="C()"   id=patientHN type=number placeholder="พิมพ์ HN แล้วเอา sticker มาแปะทับ">
+	</div>
+	<div class=colFlex1>
+	<label>วันที่ประเมิน <input  onchange="C()"   id=dateEval type=date><label>
+	<label>ครั้งที่ <input  onchange="C()"   id=numEval type=number><label>
+	<label>วันที่นัดหมาย <input  onchange="C()"   id=dateNext type=date><label>
+	<label>นักกายภาพบำบัด <input  onchange="C()"   id=PTName><label>
+	</div>
+</div>
+<div id=R2 class=rowFlex>
+	<div class=colFlex1>
+	<label>ปัญหา<input  onchange="C()"   id=PTProblem><label>
+	</div>
+	<div class=colFlex1>
+	<label>ข้อห้าม-ข้อควรระวัง<input  onchange="C()"   id=PTCaution><label>
+	</div>
+</div>
+<div id=R3 class=rowFlex>
+	<div class=colFlex1>
+	<h3>ประวัติสุขภาพและการออกกำลังกาย</h3>
+	<textarea></textarea>
+	</div>
+</div>
+<div id=R4 class=rowFlex>
+	<div class=colFlex1>
+	<h3>ผลการประเมิน</h3>
+	<h4>Muscle mass</h4>
+	<textarea id="muscleTxt"></textarea>
+	<h4>Balance Test</h4>
+	<textarea id="balanceTxt"></textarea>
+	<h4>SPPB</h4>
+	<textarea id="sppbTxt"></textarea>
+	<h4>Other</h4>
+	<textarea is="otherTxt"></textarea>
+	</div>
+</div>
+<div id=R5 class=rowFlex>
+	<div class=colFlex1>
+	<label>สรุปผลการประเมิน<input  onchange="C()"   id=PTSummary><label>
+	</div>
+</div>
+<div id=R6 class=rowFlex>
+	<div class=colFlex1>
+<h3>แผนการรักษา</h3>
+<label><input  onchange="C()"   id=plan2Education type=checkbox checked>Education</label>
+<label><input  onchange="C()"   id=plan2Home type=checkbox checked>Home program</label>
+<label><input  onchange="C()"   id=plan2Group type=checkbox>Group Exercise</label>
+<label><input  onchange="C()"   id=plan2Refer type=checkbox>Refer OPD</label>
+	</div>
+	<div class=colFlex2>
+	<h4>รายละเอียดการรักษา</h4>
+	<textarea id="careTxt"></textarea>
+	</div>
+</div>
+<div id=R7 class=rowFlex>
+	<div class=colFlex1>
+	<h4>ผู้ตรวจประเมิน</h4>
+	<p>ลงชื่อ ................................. นักกายภาพบำบัด        /       ลงชื่อ .................................. แพทย์เวชศาสตร์ฟื้นฟู</p>
+	<input type="button" id="export" onclick="X()" value="Export!">
+	</div>
+</div>
+</div></div></div>
+</body>
