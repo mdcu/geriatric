@@ -1,248 +1,382 @@
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<style>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+            }
 
-* {box-sizing:border-box;margin:0;}
+            body {
+                font-family: sans-serif
+            }
 
-div{border:0px solid gray;padding:0.5em;}
-.rowFlex {display:flex;border: 1px solid black;}
+            div {
+                border: 0px solid gray;
+                padding: 0.2em;
+            }
 
+            .rowFlex {
+                display: flex;
+                border: 1px solid black;
+            }
 
-textarea{resize:vertical;overflow:hidden;}
-input, select, textarea {font-size:14px; border-top:0px solid; border-right: 0px solid; border-left:0px solid;}
-.colFlex1 {flex:1;}
-.colFlex2 {flex:2;}
+            textarea {
+                resize: vertical;
+                overflow: hidden;
+                height: 1.5em;
+            }
 
-h1, h2, h3, h4 {margin-top:1em;margin-bottom:0em;}
+            input, select, textarea {
+                font-size: 14px;
+                border: 0px solid;
+                vertical-align: top;
+            }
 
-.frame {border:1px solid black;}
-.agent {width:18%;}
-.indication {width:18%;}
-.from {width:10%;}
-.since {width:10%;}
-.order {width:20%;}
-.real {width:20%;}
+            .colFlex1 {
+                flex: 1;
+            }
 
-.page {width:21cm;height:29.7cm;}
-.subpage {padding:0.5cm;height:26.1cm;}
+            .colFlex2 {
+                flex: 2;
+            }
 
-@page {size:A4;margin:0;}
-@media print{
-	html, body, .page	{width:21cm;height:29.7cm;font-size:14px;}
-	.page {page-break-after:always;margin:0;}
-	textarea {placeholder:""}
+            h1, h2, h3, h4 {
+                margin-top: 0.5em;
+                margin-bottom: 0em;
+            }
 
-	*::placeholder {font-size:1px;}
-}
-</style>
-<script>
+            h2 {
+                font-size: 1.2em;
+            }
 
-I = function(id){return(document.getElementById(id))}
+            .frame {
+                border: 1px solid black;
+            }
 
-C = function(){
-	let balanceA= +document.querySelectorAll("[name=balanceA]:checked")[0].value
-	let balanceB= +document.querySelectorAll("[name=balanceB]:checked")[0].value
-	let balanceC= +document.querySelectorAll("[name=balanceC]:checked")[0].value
-	let balanceSum = balanceA+balanceB+balanceC
-	I("balanceSum").value = balanceSum
+            .frame span {
+                display: inline-block;
+            }
 
-	let gaitSum = 0
-	let gait1 = I("gait1").value === "" ? 999 : +I("gait1").value
-	let gait2 = I("gait2").value === "" ? 999 : +I("gait2").value
-	console.log(gait1,gait2)
-	if(gait1==999 && gait2 ==999){
-		console.log("gait speed not ready")
-	}else{
-		let gaitS = gait1 < gait2 ? gait1 : gait2
+            .agent {
+                width: 18%;
+            }
 
-		if(gaitS>8.70)gaitSum=1
-		if(gaitS<=8.70)gaitSum=2
-		if(gaitS<=6.20)gaitSum=3
-		if(gaitS<=4.82)gaitSum=4
-	}
-	I("gaitSum").value = gaitSum
+            .indication {
+                width: 18%;
+            }
 
-	let chairSum = 0
-	let chairS = I("chair5").value ==="" ? "": +I("chair5").value
-	if(chairS ===""){
-		console.log("chair5 not ready")
-	}else{
-		if(chairS>=16.70)chairSum = 1
-		if(chairS>60)chairSum = 0
-		if(chairS<=16.69)chairSum = 2
-		if(chairS<=13.69)chairSum = 3
-		if(chairS<=11.19)chairSum = 4
-		I("chair5Sum").value = chairSum
-	}
+            .from {
+                width: 10%;
+            }
 
-	let sumSPPB = chairSum + gaitSum + balanceSum
-	I("totalScore").value = sumSPPB
+            .since {
+                width: 10%;
+            }
 
-	I("totalResult").innerHTML = sumSPPB
+            .order {
+                width: 20%;
+            }
 
-}
+            .real {
+                width: 20%;
+            }
 
-X = function(){ //get data
-	let ALL = document.querySelectorAll("*")
-	let tree = {}
-	for(let i = 0; i<ALL.length;i++){
-    		let a = ALL[i]
-    		//console.log(a)
-    		if(a.id){
-        			if(a.type=="checkbox"){
-				tree[a.id]=a.checked
-			}else if(a.value!=undefined)tree[a.id]=a.value
-		}
-    	if(a.name && a.checked)tree[a.name]=a.value
-	}
-	console.log(tree)
-	if(!tree.patientSN){alert("insert SN !!!");return(0);}
-	if(!tree.patientHN){alert("insert HN !!!");return(0);}
-	if(!tree.PTName){alert("insert PT Name !!!");return(0);}
+            .page {
+                width: 21cm;
+                height: 29.7cm;
+            }
 
-	tree.Year = new Date().getYear() % 100 + 2000
-	tree.Month = new Date().getMonth()+1
-	tree.Date = new Date().getDate()
-	const filename = tree.Year+
-			(tree.Month < 10 ? "0"+tree.Month : tree.Month) +
-			(tree.Date < 10 ? "0"+tree.Date : tree.Date) +
-			"S"+tree.patientSN+
-			"H"+tree.patientHN+
-			".json"
-	const jsonStr = JSON.stringify(tree);
+            .subpage {
+                padding: 0.5cm;
+                height: 26.1cm;
+            }
 
-	let element = document.createElement('a');
-	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(jsonStr));
-	element.setAttribute('download', filename);
+            .dynamicRow {
+                border-top: 1px solid grey;
+            }
 
-	element.style.display = 'none';
-	document.body.appendChild(element);
+            .drpDescription {
+                width: 60%;
+            }
 
-	element.click();
+            .drpSeverity {
+                width: 10%;
+            }
 
-	document.body.removeChild(element);
-}
+            .drpType {
+                width: 25%;
+                font-size: 0.8em;
+            }
 
+            @page {
+                size: A4;
+                margin: 0;
+            }
 
-checkDynamic = function(O){
-	let P = O.parentElement
-	console.log(P)
-	if(O.firstElementChild.value !== "" && O == P.lastChild){
-		
-	}else if(O.firstElementChild.value === "" && O !== P.lastChild){
-		console.log(100)
-	}
-}
+            @media print {
+                html, body, .page {
+                    width: 21cm;
+                    height: 29.7cm;
+                    font-size: 14px;
+                }
 
-</script>
-</head>
-<body>
+                .page {
+                    page-break-after: always;
+                    margin: 0;
+                }
 
-<div class=PAGE><div class=SUBPAGE>
-<h1>Medication Reconcile</h1>
-<div class="rowFlex">
-	<div class="colFlex1"><label>SN: <input id="patientSN"></label></div>
-	<div class="colFlex1"><label>HN: <input id="patientHN"></label></div>
-</div>
-<div class="rowFlex">
-	<div class="colFlex1"><label>Date: <input id="assessDate" type="date"></label></div>
-	<div class="colFlex1"><label>ผู้ที่จัดยาให้: <select id="medArrangeBy">
-		<option value="Self">ตนเอง</option>
-		<option value="Spouse">สามี ภรรยา</option>
-		<option value="Child">ลูก</option>
-		<option value="Relative">ญาติ</option>
-		<option value="Caregiver">ลูกจ้าง</option>
-		<option value="Institute">ศูนย์ฯ</option>
-		<option value="Friend">เพื่อน</option>
-	</select></label></div>
-</div>
-<div class="frame">
-	<h2>Prescription drug</h2>
-	<div class="dynamic">
-		<div class="dynamicRow" onchange="checkDynamic(this)">
-			<input class="agent" placeholder="drug name...">
-			<input class="indication" placeholder="indication for...">
-			<input class="from" placeholder="prscribed from...">
-			<input class="since" placeholder="since when...">
-			<input class="order" placeholder="prescription...">
-			<input class="real" placeholder="patient's take...">
-		</div>
-	</div>
-</div>
-<div>
-	<h2>Non-prescription drug</h2>
-</div>
-</div></div>
+                textarea {
+                    placeholder: ""
+                }
 
+                [type=button],[type=file] {
+                    display: none;
+                }
 
-<div class=PAGE><div class=SUBPAGE id=P2><div>
+                *::placeholder {
+                    font-size: 1px;
+                }
+            }
+        </style>
+        <script>
 
-<h1>รายงานผลทางเวชศาสตร์ฟื้นฟู (กายภาพบำบัด)</h1>
-<h2>คลินิกผู้สูงวัยสุขภาพดี โรงพยาบาลจุฬาลงกรณ์ สภากาชาดไทย</h2>
-<div id=R1 class=rowFlex>
-	<div class=colFlex1>
-	<p>ชื่อ-สกุล</p>
-	<input  onchange="C()"   id=patientSN type=number placeholder="พิมพ์ SN แล้วเอา sticker มาแปะทับ"><br>
-	<input  onchange="C()"   id=patientHN type=number placeholder="พิมพ์ HN แล้วเอา sticker มาแปะทับ">
-	</div>
-	<div class=colFlex1>
-	<label>วันที่ประเมิน <input  onchange="C()"   id=dateEval type=date><label>
-	<label>ครั้งที่ <input  onchange="C()"   id=numEval type=number><label>
-	<label>วันที่นัดหมาย <input  onchange="C()"   id=dateNext type=date><label>
-	<label>นักกายภาพบำบัด <input  onchange="C()"   id=PTName><label>
-	</div>
-</div>
-<div id=R2 class=rowFlex>
-	<div class=colFlex1>
-	<label>ปัญหา<input  onchange="C()"   id=PTProblem><label>
-	</div>
-	<div class=colFlex1>
-	<label>ข้อห้าม-ข้อควรระวัง<input  onchange="C()"   id=PTCaution><label>
-	</div>
-</div>
-<div id=R3 class=rowFlex>
-	<div class=colFlex1>
-	<h3>ประวัติสุขภาพและการออกกำลังกาย</h3>
-	<textarea></textarea>
-	</div>
-</div>
-<div id=R4 class=rowFlex>
-	<div class=colFlex1>
-	<h3>ผลการประเมิน</h3>
-	<h4>Muscle mass</h4>
-	<textarea id="muscleTxt"></textarea>
-	<h4>Balance Test</h4>
-	<textarea id="balanceTxt"></textarea>
-	<h4>SPPB</h4>
-	<textarea id="sppbTxt"></textarea>
-	<h4>Other</h4>
-	<textarea is="otherTxt"></textarea>
-	</div>
-</div>
-<div id=R5 class=rowFlex>
-	<div class=colFlex1>
-	<label>สรุปผลการประเมิน<input  onchange="C()"   id=PTSummary><label>
-	</div>
-</div>
-<div id=R6 class=rowFlex>
-	<div class=colFlex1>
-<h3>แผนการรักษา</h3>
-<label><input  onchange="C()"   id=plan2Education type=checkbox checked>Education</label>
-<label><input  onchange="C()"   id=plan2Home type=checkbox checked>Home program</label>
-<label><input  onchange="C()"   id=plan2Group type=checkbox>Group Exercise</label>
-<label><input  onchange="C()"   id=plan2Refer type=checkbox>Refer OPD</label>
-	</div>
-	<div class=colFlex2>
-	<h4>รายละเอียดการรักษา</h4>
-	<textarea id="careTxt"></textarea>
-	</div>
-</div>
-<div id=R7 class=rowFlex>
-	<div class=colFlex1>
-	<h4>ผู้ตรวจประเมิน</h4>
-	<p>ลงชื่อ ................................. นักกายภาพบำบัด        /       ลงชื่อ .................................. แพทย์เวชศาสตร์ฟื้นฟู</p>
-	<input type="button" id="export" onclick="X()" value="Export!">
-	</div>
-</div>
-</div></div></div>
-</body>
+            I = function(id) {
+                return (document.getElementById(id))
+            }
+
+            checkDynamic = function(O) {
+                let P = O.parentElement
+                // div.dynamic
+                console.log(P)
+                if (O.firstElementChild.value !== "" && O == P.lastElementChild) {
+                    let M = O.cloneNode(true)
+                    console.log(M)
+                    M.querySelectorAll("input").forEach(i=>{
+                        i.value = ""
+                    }
+                    )
+                    P.appendChild(M)
+                } else if (O.firstElementChild.value === "" && O != P.lastElementChild) {
+                    P.removeChild(O)
+                }
+            }
+
+            exportData = function(obj) {
+                let element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(obj)));
+                element.setAttribute('download', new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + new Date().getDate() + "_" + "S" + obj.patientSN + "H" + obj.patientHN + ".json");
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+            }
+
+            loadData = async function(e) {
+                tree = JSON.parse(await e.files[0].text())
+                I("patientSN").value = tree.patientSN
+                I("patientHN").value = tree.patientHN
+                I("medArrangeBy").value = tree.medArrangeBy
+                let P = I("prescribed").firstElementChild
+                tree.prescribed.forEach(r=>{
+                    console.log(r)
+                    Object.keys(r).forEach(k=>{
+                        P.getElementsByClassName(k)[0].value = r[k]
+                    }
+                    )
+                    P.onchange()
+                    P = P.nextElementSibling
+                }
+                )
+                P = I("nonPrescribed").firstElementChild
+                tree.nonPrescribed.forEach(r=>{
+                    console.log(r)
+                    Object.keys(r).forEach(k=>{
+                        P.getElementsByClassName(k)[0].value = r[k]
+                    }
+                    )
+                    P.onchange()
+                    P = P.nextElementSibling
+                }
+                )
+                P = I("drugProblem").firstElementChild
+                tree.drugProblem.forEach(r=>{
+                    console.log(r)
+                    Object.keys(r).forEach(k=>{
+                        P.getElementsByClassName(k)[0].value = r[k]
+                    }
+                    )
+                    P.onchange()
+                    P = P.nextElementSibling
+                }
+                )
+            }
+
+            saveData = function() {
+                let tree = {}
+                tree.patientSN = I("patientSN").value
+                tree.patientHN = I("patientHN").value
+                tree.assessDate = I("assessDate").value
+                tree.pharmName = I("pharmName").value
+                tree.medArrangeBy = I("medArrangeBy").value
+                tree.prescribed = readDynamic("prescribed")
+                tree.nonPrescribed = readDynamic("nonPrescribed")
+                tree.drugProblem = readDynamic("drugProblem")
+                exportData(tree)
+            }
+
+            readDynamic = function(id) {
+                let main = I(id)
+                let result = []
+                let s = main.firstElementChild
+                while (s) {
+                    let item = {}
+                    if (s.firstElementChild.value == "") {
+                        s = s.nextElementSibling;
+                        continue;
+                    }
+                    s.querySelectorAll("input, select, textarea").forEach(i=>{
+                        item[i.className] = i.value
+                    }
+                    )
+                    result.push(item)
+                    s = s.nextElementSibling
+                }
+                return (result)
+            }
+            ;
+        </script>
+    </head>
+    <body>
+        <div class="PAGE">
+            <div class="SUBPAGE">
+                <h1>
+                    Medication Reconcile <input type="file" onchange="loadData(this)">
+                </h1>
+                <div class="rowFlex">
+                    <div class="colFlex1">
+                        <label>
+                            SN: <input id="patientSN">
+                        </label>
+                    </div>
+                    <div class="colFlex1">
+                        <label>
+                            HN: <input id="patientHN">
+                        </label>
+                    </div>
+                </div>
+                <div class="rowFlex">
+                    <div class="colFlex1">
+                        <label>
+                            Date: <input id="assessDate" type="date">
+                        </label>
+                    </div>
+                    <div class="colFlex1">
+                        <label>
+                            ผู้ที่จัดยาให้: 
+                            <select id="medArrangeBy">
+                                <option value="Self">ตนเอง</option>
+                                <option value="Spouse">สามี ภรรยา</option>
+                                <option value="Child">ลูก</option>
+                                <option value="Relative">ญาติ</option>
+                                <option value="Caregiver">ลูกจ้าง</option>
+                                <option value="Institute">ศูนย์ฯ</option>
+                                <option value="Friend">เพื่อน</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+                <div class="frame">
+                    <h2>Prescription drug</h2>
+                    <span class="agent">ชื่อยา</span>
+                    <span class="indication">ข้อบ่งชี้</span>
+                    <span class="from">ได้จาก</span>
+                    <span class="since">ตั้งแต่</span>
+                    <span class="order">วิธีใช้ที่สั่ง</span>
+                    <span class="real">วิธีใช้จริง</span>
+                    <div class="dynamic" id="prescribed">
+                        <div class="dynamicRow" onchange="checkDynamic(this)">
+                            <input class="agent" placeholder="drug name...">
+                            <input class="indication" placeholder="indication for...">
+                            <input class="from" placeholder="prscribed from...">
+                            <input class="since" placeholder="since when...">
+                            <input class="order" placeholder="prescription...">
+                            <input class="real" placeholder="patient&#39;s take...">
+                        </div>
+                    </div>
+                </div>
+                <div class="frame">
+                    <h2>Non-prescription drug</h2>
+                    <span class="agent">ชื่อยา</span>
+                    <span class="indication">ข้อบ่งชี้</span>
+                    <span class="from">ได้จาก</span>
+                    <span class="since">ตั้งแต่</span>
+                    <span class="order">วิธีใช้ที่สั่ง</span>
+                    <span class="real">วิธีใช้จริง</span>
+                    <div class="dynamic" id="nonPrescribed">
+                        <div class="dynamicRow" onchange="checkDynamic(this)">
+                            <input class="agent" placeholder="drug name...">
+                            <input class="indication" placeholder="indication for...">
+                            <input class="from" placeholder="prscribed from...">
+                            <input class="since" placeholder="since when...">
+                            <input class="order" placeholder="prescription...">
+                            <input class="real" placeholder="patient&#39;s take...">
+                        </div>
+                    </div>
+                </div>
+                <div class="frame">
+                    <h2>Prescription problem</h2>
+                    <span class="drpType">ประเภท DRP</span>
+                    <span class="drpSeverity">ความรุนแรง</span>
+                    <span class="drpDescription">คำอธิบาย</span>
+                    <div class="dynamic" id="drugProblem">
+                        <div class="dynamicRow" onchange="checkDynamic(this)">
+                            <select class="drpType">
+                                <option value="">none</option>
+                                <option value=1>Need additional drug</option>
+                                <option value=2>Unnecessary drug</option>
+                                <option value=3>Improper drug selection</option>
+                                <option value=4>Dosage too LOW</option>
+                                <option value=5>Dosage too HIGH</option>
+                                <option value=6>ADRs</option>
+                                <option value=7>DIs</option>
+                                <option value=8>Non-adherence</option>
+                            </select>
+                            <select class="drpSeverity">
+                                <option value="">none</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                                <option value="E">E</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                                <option value="H">H</option>
+                                <option value="I">I</option>
+                            </select>
+                            <textarea class="drpDescription"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="rowFlex">
+                    <div class="colFlex2">
+                        <input type="button" value="export" onclick="saveData()">
+                    </div>
+                    <div class="colFlex2"></div>
+                    <div class="colFlex2"></div>
+                    <div class="colFlex1">
+                        <br>
+                        ...................<br>
+                        <input id="pharmName" placeholder="ชื่อเภสัชกร">
+                        <span id="NOW"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            I("NOW").innerHTML = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + new Date().getDate()
+        </script>
+    </body>
+</html>
