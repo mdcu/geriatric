@@ -33,12 +33,22 @@
                 vertical-align: top;
             }
 
+            [type=checkbox] {margin-left: 1em;}
+
             .colFlex1 {
                 flex: 1;
             }
 
             .colFlex2 {
                 flex: 2;
+            }
+
+            .colFlex3 {
+                flex: 3;
+            }
+
+            .colFlex4 {
+                flex: 4;
             }
 
             h1, h2, h3, h4 {
@@ -97,11 +107,11 @@
             }
 
             .drpDescription {
-                width: 60%;
+                width: 50%;
             }
 
             .drpSeverity {
-                width: 10%;
+                width: 20%;
             }
 
             .drpType {
@@ -109,6 +119,8 @@
                 font-size: 0.8em;
             }
 
+            #sources label {float: left;}
+            #pharmNote {width:100%;height:5em;}
             @page {
                 size: A4;
                 margin: 0;
@@ -165,7 +177,7 @@
             exportData = function(obj) {
                 let element = document.createElement('a');
                 element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(obj)));
-                element.setAttribute('download', new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + new Date().getDate() + "_" + "S" + obj.patientSN + "H" + obj.patientHN + ".json");
+                element.setAttribute('download', new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + new Date().getDate() + "_" + "S" + obj.patientSN + "H" + obj.patientHN + ".pharmST4");
                 element.style.display = 'none';
                 document.body.appendChild(element);
 
@@ -179,6 +191,13 @@
                 I("patientSN").value = tree.patientSN
                 I("patientHN").value = tree.patientHN
                 I("medArrangeBy").value = tree.medArrangeBy
+                I("sourceActual").checked = tree.sourceActual
+                I("sourcePackage").checked = tree.sourcePackage
+                I("sourceNote").checked = tree.sourceNote
+                I("sourcePatient").checked = tree.sourcePatient
+                I("sourcePhone").checked = tree.sourcePhone
+                I("sourcePhoto").checked = tree.sourcePhoto
+                I("pharmNote").value = tree.pharmNote
                 let P = I("prescribed").firstElementChild
                 tree.prescribed.forEach(r=>{
                     console.log(r)
@@ -221,6 +240,13 @@
                 tree.assessDate = I("assessDate").value
                 tree.pharmName = I("pharmName").value
                 tree.medArrangeBy = I("medArrangeBy").value
+                tree.sourceActual = I("sourceActual").checked
+                tree.sourcePackage = I("sourcePackage").checked
+                tree.sourceNote = I("sourceNote").checked
+                tree.sourcePatient = I("sourcePatient").checked
+                tree.sourcePhone = I("sourcePhone").checked
+                tree.sourcePhoto = I("sourcePhoto").checked
+                tree.pharmNote = I("pharmNote").value
                 tree.prescribed = readDynamic("prescribed")
                 tree.nonPrescribed = readDynamic("nonPrescribed")
                 tree.drugProblem = readDynamic("drugProblem")
@@ -253,7 +279,7 @@
         <div class="PAGE">
             <div class="SUBPAGE">
                 <h1>
-                    Medication Reconcile <input type="file" onchange="loadData(this)">
+                    Medication Reconcile <input type="file" accept=".pharmST4" onchange="loadData(this)">
                 </h1>
                 <div class="rowFlex">
                     <div class="colFlex1">
@@ -266,16 +292,16 @@
                             HN: <input id="patientHN">
                         </label>
                     </div>
-                </div>
-                <div class="rowFlex">
                     <div class="colFlex1">
                         <label>
                             Date: <input id="assessDate" type="date">
                         </label>
                     </div>
+                </div>
+                <div class="rowFlex">
                     <div class="colFlex1">
                         <label>
-                            ผู้ที่จัดยาให้: 
+                            ผู้ที่จัดยาให้:
                             <select id="medArrangeBy">
                                 <option value="Self">ตนเอง</option>
                                 <option value="Spouse">สามี ภรรยา</option>
@@ -286,6 +312,15 @@
                                 <option value="Friend">เพื่อน</option>
                             </select>
                         </label>
+                    </div>
+                    <div class="colFlex2" id="sources">
+                      ที่มาของข้อมูล <br>
+                      <label><input type=checkbox id="sourceActual"> นำยามา </label>
+                      <label><input type=checkbox id="sourcePackage"> นำซองยามา </label>
+                      <label><input type=checkbox id="sourcePatient"> ผู้ป่วยแจ้ง </label>
+                      <label><input type=checkbox id="sourcePhoto"> ถ่ายรูปมา </label>
+                      <label><input type=checkbox id="sourceNote"> จดมา </label>
+                      <label><input type=checkbox id="sourcePhone"> โทรศัพท์สอบถามแหล่งข้างนอก </label>
                     </div>
                 </div>
                 <div class="frame">
@@ -313,7 +348,6 @@
                     <span class="indication">ข้อบ่งชี้</span>
                     <span class="from">ได้จาก</span>
                     <span class="since">ตั้งแต่</span>
-                    <span class="order">วิธีใช้ที่สั่ง</span>
                     <span class="real">วิธีใช้จริง</span>
                     <div class="dynamic" id="nonPrescribed">
                         <div class="dynamicRow" onchange="checkDynamic(this)">
@@ -321,28 +355,31 @@
                             <input class="indication" placeholder="indication for...">
                             <input class="from" placeholder="prscribed from...">
                             <input class="since" placeholder="since when...">
-                            <input class="order" placeholder="prescription...">
                             <input class="real" placeholder="patient&#39;s take...">
                         </div>
                     </div>
                 </div>
                 <div class="frame">
-                    <h2>Prescription problem</h2>
-                    <span class="drpType">ประเภท DRP</span>
+                    <h2>Medication problem</h2>
+                    <span class="drpType">ประเภท</span>
                     <span class="drpSeverity">ความรุนแรง</span>
                     <span class="drpDescription">คำอธิบาย</span>
                     <div class="dynamic" id="drugProblem">
                         <div class="dynamicRow" onchange="checkDynamic(this)">
                             <select class="drpType">
                                 <option value="">none</option>
-                                <option value=1>Need additional drug</option>
-                                <option value=2>Unnecessary drug</option>
-                                <option value=3>Improper drug selection</option>
-                                <option value=4>Dosage too LOW</option>
-                                <option value=5>Dosage too HIGH</option>
-                                <option value=6>ADRs</option>
-                                <option value=7>DIs</option>
-                                <option value=8>Non-adherence</option>
+                                <option value="DRP1">Need additional drug</option>
+                                <option value="DRP2">Unnecessary drug</option>
+                                <option value="DRP3">Improper drug selection</option>
+                                <option value="DRP4">Dosage too LOW</option>
+                                <option value="DRP5">Dosage too HIGH</option>
+                                <option value="DRP6">ADRs</option>
+                                <option value="DRP7">DIs</option>
+                                <option value="DRP8">Non-adherence</option>
+                                <option value="ME1">Presciption error</option>
+                                <option value="ME2">Transcribing error</option>
+                                <option value="ME3">Dispensing error</option>
+                                <option value="ME4">Administration error</option>
                             </select>
                             <select class="drpSeverity">
                                 <option value="">none</option>
@@ -361,11 +398,11 @@
                     </div>
                 </div>
                 <div class="rowFlex">
-                    <div class="colFlex2">
-                        <input type="button" value="export" onclick="saveData()">
+                    <div class="colFlex4">
+                      <h2>Pharmacist's note</h2>
+                      <textarea id="pharmNote"></textarea>
+                      <input type="button" value="export" onclick="saveData()">
                     </div>
-                    <div class="colFlex2"></div>
-                    <div class="colFlex2"></div>
                     <div class="colFlex1">
                         <br>
                         ...................<br>
