@@ -122,6 +122,19 @@
             #sources label {float: left;}
             #pharmNote {width:100%;height:5em;}
 
+            .di1, .di2, {
+              width:25%;
+            }
+            .diRef, .diRisk {
+              width:20%;
+            }
+
+            .diSum, .diMan {
+              width:45%;
+              border:1px solid grey;
+            }
+
+
             .onkacompleteDiv {
             				position: fixed;
             				background-color: white;
@@ -149,7 +162,7 @@
                 }
 
                 textarea {
-                    placeholder: ""
+                    resize:none;
                 }
 
                 [type=button],[type=file] {
@@ -194,6 +207,14 @@
                 element.click();
 
                 document.body.removeChild(element);
+                // end game for printing
+
+            }
+
+            print_prepare = function(){
+              document.querySelectorAll(".dynamicRow").forEach(h => {if(h.firstElementChild && h.firstElementChild.value=="")h.style.display="none"})
+              document.querySelectorAll("input, textarea").forEach(h => {h.placeholder="";_textarea_resize(h)})
+              window.print()
             }
 
             loadData = async function(e) {
@@ -241,6 +262,17 @@
                     P = P.nextElementSibling
                 }
                 )
+                P = I("interaction").firstElementChild
+                tree.interaction.forEach(r=>{
+                    console.log(r)
+                    Object.keys(r).forEach(k=>{
+                        P.getElementsByClassName(k)[0].value = r[k]
+                    }
+                    )
+                    P.onchange()
+                    P = P.nextElementSibling
+                }
+                )
                 document.querySelectorAll("textarea").forEach(t=>{_textarea_resize(t)})
             }
 
@@ -261,6 +293,7 @@
                 tree.prescribed = readDynamic("prescribed")
                 tree.nonPrescribed = readDynamic("nonPrescribed")
                 tree.drugProblem = readDynamic("drugProblem")
+                tree.interaction = readDynamic("interaction")
                 exportData(tree)
             }
 
@@ -325,6 +358,14 @@
               e.target.origin.value = e.target.innerHTML
               _textarea_resize(e.target.origin)
               _close_list()
+            }
+
+            _get_drug_list = function(){
+              let res= []
+              document.querySelectorAll(".agent").forEach(a=>{
+                if(a.value!="" && a.value!=undefined && !res.includes(a.value))res.push(a.value)
+              })
+              return(res)
             }
 
             onkacomplete = function(e,arr=drug_list){
@@ -448,8 +489,7 @@
                                 <option value="DRP4">Dosage too LOW</option>
                                 <option value="DRP5">Dosage too HIGH</option>
                                 <option value="DRP6">ADRs</option>
-                                <option value="DRP7">DIs</option>
-                                <option value="DRP8">Non-adherence</option>
+                                <option value="DRP7">Non-adherence</option>
                                 <option value="ME1">Presciption error</option>
                                 <option value="ME2">Transcribing error</option>
                                 <option value="ME3">Dispensing error</option>
@@ -471,11 +511,31 @@
                         </div>
                     </div>
                 </div>
+                <div class=frame>
+                  <h2>Drugs Interaction</h2>
+                  <div class="dynamic" id="interaction">
+                    <div class="dynamicRow" onchange="checkDynamic(this)">
+                      <textarea oninput="onkacomplete(this,_get_drug_list());_textarea_keypress(event);" class="di1" placeholder="agent 1"></textarea>
+                      <textarea oninput="onkacomplete(this,_get_drug_list());_textarea_keypress(event);" class="di2" placeholder="agent 2"></textarea>
+                      <select class="diRisk">
+                        <option value="A">No...</option>
+                        <option value="B">No action needed</option>
+                        <option value="C">Monitor therapy</option>
+                        <option value="D">Modify regimen</option>
+                        <option value="X">Avoid combination</option>
+                      </select>
+                      <textarea oninput="_textarea_resize(this)" class="diRef" placeholder="reference"></textarea>
+                      <textarea oninput="_textarea_resize(this)" class="diSum" placeholder="summary..."></textarea>
+                      <textarea oninput="_textarea_resize(this)" class="diMan" placeholder="management..."></textarea>
+                    </div>
+                  </div>
+                </div>
                 <div class="rowFlex">
                     <div class="colFlex4">
                       <h2>Pharmacist's note</h2>
                       <textarea oninput="_textarea_resize(this)" id="pharmNote"></textarea>
                       <input type="button" value="export" onclick="saveData()">
+                      <input type="button" value="print" onclick="print_prepare()">
                     </div>
                     <div class="colFlex1">
                         <br>
