@@ -21,6 +21,14 @@
     function cal(){
       const SURROOT = 0.978296
       for(let i = 1; i<=2; i++){
+        document.getElementById("f1_"+i).innerText = "N/A"
+        document.getElementById("f2_"+i).innerText = "N/A"
+        document.getElementById("f3_"+i).innerText = "N/A"
+        document.getElementById("f4_"+i).innerText = "N/A"
+        document.getElementById("f5_"+i).innerText = "N/A"
+        document.getElementById("f6_"+i).innerText = "N/A"
+        document.getElementById("worst_"+i).innerText = "N/A"
+        document.getElementById("thai_suggest_"+i).innerText = "N/A"
         let AGE = document.getElementById("age"+i).value; if(!AGE)continue;
         let SEX = document.getElementById("sex"+i).value;
         let SBP = document.getElementById("sbp"+i).value; if(!SBP)continue;
