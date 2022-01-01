@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="viewport" content="user-scalable=no, width=device-width"/>
+    <meta name="apple-mobile-web-app-title" content="ST4 Thai CV"/>
+    <title>ST4 Thai CV risk score with suggestion</title>
+    <!--<link rel="icon" href="https://mdcu.github.io/onka.js/asset/onka.png" type="image/x-icon"/>-->
+    <style>
+      body {margin:auto;padding:auto;}
+      td, th {text-align:center;max-width:30vw;}
+      td:first-child, th:first-child {text-align:right;font-weight:bold;}
+      tr:nth-child(odd) {background-color: #DDD;}
+      tr:first-child {background-color: black;color:white;}
+      input, select {width:25vw;text-align:center}
+    </style>
+
+
+    <script>
+    function cal(){
+      const SURROOT = 0.978296
+      for(let i = 1; i<=2; i++){
+        let AGE = document.getElementById("age"+i).value; if(!AGE)continue;
+        let SEX = document.getElementById("sex"+i).value;
+        let SBP = document.getElementById("sbp"+i).value; if(!SBP)continue;
+        let SMOKE = +document.getElementById("smoke"+i).checked;
+        let DM = +document.getElementById("dm"+i).checked;
+
+        let HEIGHT = document.getElementById("height"+i).value;
+        let WHR = undefined;
+        let WC = document.getElementById("wc"+i).value; if(WC){WC=WC*2.5;if(HEIGHT)WHR=WC/HEIGHT;}
+        let TC = document.getElementById("tc"+i).value;
+        let LDL = document.getElementById("ldl"+i).value;
+        let HDL = document.getElementById("hdl"+i).value;
+        console.log(HEIGHT);console.log(WC);console.log(TC);console.log(LDL);console.log(HDL);
+
+        if(AGE>70)AGE = 70;
+        let WORST = undefined;
+        if(LDL && HDL){
+          let full_score = (0.08305 * AGE) + (0.24893 * SEX) + (0.02164 * SBP) + (0.65224 * DM) + (0.00243 * LDL) + ((-0.01965) * HDL) + (0.43868 * SMOKE);
+          let predicted_risk = 1 - (Math.pow(SURROOT, Math.exp(full_score - 5.9826)));
+          if(!WORST || WORST < predicted_risk)WORST = predicted_risk
+          document.getElementById("f1_"+i).innerText = (100*predicted_risk).toFixed(2)+"%"
+        }
+        if(LDL){
+          let full_score = (0.08169 * AGE) + (0.35156 * SEX) + (0.02084 * SBP) + (0.65052 * DM) + (0.002094 * LDL) + (0.45639 * SMOKE); // i add one zero to LDL
+          let predicted_risk = 1 - (Math.pow(SURROOT, Math.exp(full_score - 6.99911)));
+          if(!WORST || WORST < predicted_risk)WORST = predicted_risk
+          document.getElementById("f2_"+i).innerText = (100*predicted_risk).toFixed(2)+"%"
+        }
+        if(TC && HDL){
+          let full_score = (0.083 * AGE) + (0.28094 * SEX) + (0.02111 * SBP) + (0.69005 * DM) + (0.00214 * TC) + ((-0.02148) * HDL) + (0.40068 * SMOKE);
+          let predicted_risk = 1 - (Math.pow(SURROOT, Math.exp(full_score - 6.00168)));
+          if(!WORST || WORST < predicted_risk)WORST = predicted_risk
+          document.getElementById("f3_"+i).innerText = (100*predicted_risk).toFixed(2)+"%"
+        }
+        if(TC){
+          let full_score = (0.08183 * AGE) + (0.39499 * SEX) + (0.02084 * SBP) + (0.69974 * DM) + (0.00212 * TC) + (0.41916 * SMOKE);
+          let predicted_risk = 1 - (Math.pow(SURROOT, Math.exp(full_score - 7.04423)));
+          if(!WORST || WORST < predicted_risk)WORST = predicted_risk
+          document.getElementById("f4_"+i).innerText = (100*predicted_risk).toFixed(2)+"%"
+        }
+        if(WC){
+          let full_score = (0.08372 * AGE) + (0.05988 * SEX) + (0.02034 * SBP) + (0.59953 * DM) + (0.01283 * WC) + (0.459 * SMOKE);
+          let predicted_risk = 1 - (Math.pow(SURROOT, Math.exp(full_score - 7.31047)));
+          if(!WORST || WORST < predicted_risk)WORST = predicted_risk
+          document.getElementById("f5_"+i).innerText = (100*predicted_risk).toFixed(2)+"%"
+        }
+        if(WHR){
+          let full_score = (0.079 * AGE) + (0.128 * SEX) + (0.019350987 * SBP) + (0.58454 * DM) + (3.512566 * WHR) + (0.459 * SMOKE);
+          let predicted_risk = 1 - (Math.pow(SURROOT, Math.exp(full_score - 7.720484)));
+          if(!WORST || WORST < predicted_risk)WORST = predicted_risk
+          document.getElementById("f6_"+i).innerText = (100*predicted_risk).toFixed(2)+"%"
+        }
+        if(WORST){
+          document.getElementById("worst_"+i).innerText = (100*WORST).toFixed(2)+"%"
+          let TEXT = ""
+          if(DM && LDL && LDL >= 190)TEXT = "DM + LDL>=190 :: Moderate intensity statin, target LDL < 100 mg/dL or 50% lower"
+          if(DM && LDL && LDL < 190)TEXT = "DM + LDL<190 :: Moderate intensity statin, target LDL < 100 mg/dL or 30% lower"
+          if(DM && !LDL)TEXT = "DM :: Moderate intensity statin, target LDL < 100 mg/dL"
+          if(!DM && LDL && LDL >= 190)TEXT = "Non-DM + LDL>=190 :: Moderate intensity statin, target LDL < 130 mg/dL or 50% lower"
+          if(!DM && (!LDL || LDL < 190) && WORST>=0.1)TEXT = "Risk>=10% :: Low intensity statin, target LDL < 130 mg/dL or 30% lower"
+          if(!DM && (!LDL || LDL < 190) && WORST<0.1)TEXT = "Non-DM, LDL<190, Risk<10% :: Happy as is!"
+          document.getElementById("thai_suggest_"+i).innerText = TEXT
+        }
+      }
+    }
+    function clone(){
+      document.getElementById("age2").value=document.getElementById("age1").value;
+      document.getElementById("sex2").value=document.getElementById("sex1").value;
+      document.getElementById("sbp2").value=document.getElementById("sbp1").value;
+      document.getElementById("smoke2").checked=document.getElementById("smoke1").checked;
+      document.getElementById("dm2").checked=document.getElementById("dm1").checked;
+      document.getElementById("height2").value=document.getElementById("height1").value;
+      document.getElementById("wc2").value=document.getElementById("wc1").value;
+      document.getElementById("tc2").value=document.getElementById("tc1").value;
+      document.getElementById("ldl2").value=document.getElementById("ldl1").value;
+      document.getElementById("hdl2").value=document.getElementById("hdl1").value;
+      cal();
+    }
+    </script>
+  </head>
+  <body>
+    <h1>Tweaked Thai CV Risk Calculator</h1>
+    <table onchange="cal()">
+      <tr><th>Variable</th><th>Value</th><th><span onclick="clone()">Click2Clone</span></th></tr>
+      <tr><td>Age:</td><td><input id=age1 type=number min=0 max=120/></td><td><input id=age2 type=number min=0 max=120/></td></tr>
+      <tr><td>Sex:</td><td><select id=sex1 ><option value=1 selected>M</option><option value=0>F</option></select></td><td><select id=sex2 ><option value=1 selected>M</option><option value=0>F</option></select></td></tr>
+      <tr><td>SBP:</td><td><input id=sbp1 type=number min=60 max=220/></td><td><input id=sbp2 type=number min=60 max=220/></td></tr>
+      <tr><td>Smoke:</td><td><input id=smoke1  type=checkbox></td><td><input id=smoke2  type=checkbox></td></tr>
+      <tr><td>DM:</td><td><input id=dm1 type=checkbox></td><td><input id=dm2 type=checkbox></td></tr>
+      <tr><td>Height:</td><td><input id=height1 type=number min=80 max=200/></td><td><input id=height2 type=number min=80 max=200/></td></tr>
+      <tr><td>WC:</td><td><input id=wc1 type=number min=15 max=80/></td><td><input id=wc2 type=number min=15 max=80/></td></tr>
+      <tr><td>TC:</td><td><input id=tc1 type=number min=20 max=500/></td><td><input id=tc2 type=number min=20 max=500/></td></tr>
+      <tr><td>LDL:</td><td><input id=ldl1 type=number min=1 max=500/></td><td><input id=ldl2 type=number min=1 max=500/></td></tr>
+      <tr><td>HDL:</td><td><input id=hdl1 type=number min=1 max=200/></td><td><input id=hdl2 type=number min=1 max=200/></td></tr>
+      <tr><td>#1 LDL x HDL</td><td id=f1_1></td><td id=f1_2></td></tr>
+      <tr><td>#2 LDL</td><td id=f2_1></td><td id=f2_2></td></tr>
+      <tr><td>#3 TC x HDL</td><td id=f3_1></td><td id=f3_2></td></tr>
+      <tr><td>#4 TC</td><td id=f4_1></td><td id=f4_2></td></tr>
+      <tr><td>#5 WC</td><td id=f5_1></td><td id=f5_2></td></tr>
+      <tr><td>#6 WHR</td><td id=f6_1></td><td id=f6_2></td></tr>
+      <tr><td>Worst risk:</td><td id=worst_1></td><td id=worst_2></td></tr>
+      <tr><td>Thai recommend</td><td id=thai_suggest_1></td><td id=thai_suggest_2></td></tr>
+    </table>
+  </body>
+</html>
