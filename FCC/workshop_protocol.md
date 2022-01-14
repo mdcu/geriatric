@@ -16,7 +16,7 @@ updated: 18 December 2021
   *  ฐาน psychosocial issue โดยทีมนักสังคมสงเคราะห์คลินิก (cinical social worker)
 
 *แผนที่บริเวณสธ4*
-![image](https://user-images.githubusercontent.com/67822332/109493588-4fbc1300-7abf-11eb-842c-4cd3859efe96.png)
+![image](https://github.com/mdcu/geriatric/blob/main/%E0%B8%AA%E0%B8%98_%E0%B8%9C%E0%B8%B1%E0%B8%87%E0%B9%80%E0%B8%9B%E0%B8%B4%E0%B8%94%E0%B8%95%E0%B8%B6%E0%B8%81_20210721-R5.pptx%20(1).png?raw=true)
 
  
 ## Evaluation
