@@ -1,6 +1,6 @@
-# Workshop FCC Multidisciplinary care for Older patients
+# Workshop ICC Multidisciplinary care for Older patients
 
-updated: 18 December 2021
+updated: 11 January 2024
 
 ## Behavioural outcomes
 * สามารถระบุบทบาทของสหสาชาวิชาชีพในการดูแลผู้สูงวัยอย่างเป็นองค์รวม
@@ -8,7 +8,7 @@ updated: 18 December 2021
 
 ## Activity
 * สถานที่ คลินิกผู้สูงวัยสุขภาพดี ส.ธ. 4
-* นิสิตในแต่ละวันแบ่งเป็น 4 กลุ่ม กลุ่มละ 11-13 คน  [ดูรายชื่อ](https://docs.google.com/spreadsheets/d/e/2PACX-1vTzc8_UX0fYdEIOEWYNmfYJqKpw7FHmBBjLvRgezbvhXwT-VILb5e5w6nZjp1gmZZ9nmyP2Yj2TI1Wq/pubhtml) ขอให้ดูว่าตนเองเริ่มที่ฐานไหนเพื่อไปเริ่มต้นให้ถูกต้อง
+* นิสิตในแต่ละวันแบ่งเป็น 4 กลุ่ม กลุ่มละ 12-13 คน  [ดูรายชื่อ](https://docs.google.com/spreadsheets/u/5/d/e/2PACX-1vTBY1w4n4-fplLoMyYjHayT9TDfbYr-giCXxq2reYst5K_3jGJnkJVxK-hvhoO9iUgf5POIRfrkwBtS/pubhtml?gid=480572336#) ขอให้ดูว่าตนเองเริ่มที่ฐานไหนเพื่อไปเริ่มต้นให้ถูกต้อง
 * กิจกรรมแบบ workshop 4 ฐาน ฐานละ 35 นาที ประกอบด้วย
   *  ฐาน activities of daily living โดยทีมนักกิจกรรมบำบัด (occupational therapist)
   *  ฐาน falls and poor mobility โดยทีมนักกายภาพบำบัด (physical therapist)
