@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตัวนับเวลาถอยหลัง</title>
+    <!-- โหลด Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลด Tone.js สำหรับเสียงเตือน -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes flash {
+            0%, 100% { background-color: #1f2937; }
+            50% { background-color: #991b1b; }
+        }
+        .alarm-active {
+            animation: flash 0.5s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen transition-colors duration-300" id="appBody">
+    
+    <!-- (อัปเดต) เพิ่ม padding-bottom เพื่อให้มีที่ว่างเมื่อรายการบันทึกยาวขึ้น -->
+    <div class="w-full max-w-sm bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 mb-8">
+        
+        <h1 class="text-2xl md:text-3xl font-bold text-center text-cyan-400 mb-6">ตัวนับเวลาถอยหลัง</h1>
+        
+        <!-- หน้าจอแสดงเวลา -->
+        <div id="timerDisplay" class="text-7xl md:text-8xl font-mono font-bold text-center mb-6">
+            30.00
+        </div>
+        
+        <!-- ข้อความแจ้งเตือน -->
+        <div id="alarmMessage" class="text-center text-red-400 font-bold h-6 mb-4 text-lg">
+            <!-- ข้อความเตือนจะแสดงที่นี่ -->
+        </div>
+        
+        <!-- (อัปเดต) กลุ่มปุ่มควบคุม (เลย์เอาต์ใหม่ 2 คอลัมน์) -->
+        <!-- กำหนดความสูงคงที่ให้ container (เช่น h-28) เพื่อให้ปุ่ม h-full ด้านขวาทำงานได้ -->
+        <div class="flex space-x-4 h-28">
+            
+            <!-- (ใหม่) คอลัมน์ซ้าย (เริ่ม + รีเซ็ต) -->
+            <div class="w-1/2 flex flex-col space-y-4">
+                <button id="startButton" class="w-full h-1/2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transform transition duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed">
+                    เริ่ม
+                </button>
+                <button id="resetButton" class="w-full h-1/2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transform transition duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
+                    รีเซ็ต
+                </button>
+            </div>
+            
+            <!-- (ใหม่) คอลัมน์ขวา (บันทึก) -->
+            <div class="w-1/2">
+                <button id="markButton" class="w-full h-full bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 rounded-lg shadow-lg transform transition duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed text-xl flex items-center justify-center">
+                    บันทึกเวลา
+                </button>
+            </div>
+        </div>
+        
+        <!-- (อัปเดต) รายการเวลาที่บันทึก (ลบ h-32 และ overflow-y-auto) -->
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold mb-3 text-cyan-300">เวลาที่บันทึกไว้ (นับขึ้น)</h2>
+            <ul id="lapsContainer" class="list-none space-y-2 bg-gray-700 p-4 rounded-lg text-gray-200 font-mono">
+                <!-- เวลาที่บันทึกจะถูกเพิ่มที่นี่ และกล่องนี้จะขยายลง -->
+            </ul>
+        </div>
+        
+    </div>
+
+    <script>
+        // --- ค่าคงที่และตัวแปรสถานะ ---
+        const TOTAL_TIME = 30; // 30 วินาที
+        let timeRemaining = TOTAL_TIME;
+        let isRunning = false;
+        let timerInterval = null;
+        let startTime = 0;
+        let lapTimes = [];
+
+        // --- DOM Elements ---
+        const timerDisplay = document.getElementById('timerDisplay');
+        const alarmMessage = document.getElementById('alarmMessage');
+        const startButton = document.getElementById('startButton');
+        const markButton = document.getElementById('markButton');
+        const resetButton = document.getElementById('resetButton');
+        const lapsContainer = document.getElementById('lapsContainer');
+        const appBody = document.getElementById('appBody');
+
+        // --- Audio (Tone.js) ---
+        const synth = new Tone.Synth({
+            oscillator: { type: "sine" },
+            envelope: {
+                attack: 0.01,
+                decay: 0.1,
+                sustain: 0.1,
+                release: 0.2
+            }
+        }).toDestination();
+        
+        /** เสียงกดปุ่มเริ่ม: นกหวีดสั้น 2 ที */
+        function playStartSound() {
+            const now = Tone.now();
+            synth.triggerAttackRelease("G5", "16n", now, 0.8);
+            synth.triggerAttackRelease("G5", "16n", now + 0.15, 0.8);
+        }
+
+        /** เสียงกดปุ่มบันทึก: เสียงเบาๆ */
+        function playMarkSound() {
+            const now = Tone.now();
+            synth.triggerAttackRelease("C5", "32n", now, 0.3);
+        }
+
+        /** เสียงหมดเวลา: นกหวีดยาว */
+        function playAlarmSound() {
+            const now = Tone.now();
+            synth.triggerAttackRelease("A5", "0.8n", now, 1);
+        }
+
+        // --- Functions ---
+
+        function formatTime(seconds) {
+            const secs = Math.floor(seconds);
+            const milliseconds = Math.floor(Math.max(0, (seconds - secs)) * 100); 
+            return `${String(secs).padStart(2, '0')}.${String(milliseconds).padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(timeRemaining);
+        }
+
+        function timerTick() {
+            const elapsedTime = (Date.now() - startTime) / 1000;
+            timeRemaining = TOTAL_TIME - elapsedTime;
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                timeRemaining = 0;
+                isRunning = false;
+                
+                alarmMessage.textContent = 'หมดเวลา!';
+                appBody.classList.add('alarm-active');
+                playAlarmSound();
+                
+                startButton.disabled = false;
+                startButton.textContent = 'เริ่มใหม่';
+                markButton.disabled = true;
+            }
+            
+            updateDisplay();
+        }
+
+        async function startTimer() {
+            if (isRunning) return;
+
+            if (Tone.context.state !== 'running') {
+                await Tone.start();
+                console.log('AudioContext started');
+            }
+
+            resetAlarm();
+            
+            isRunning = true;
+            startTime = Date.now();
+            lapTimes = [];
+            lapsContainer.innerHTML = ''; 
+            
+            startButton.disabled = true;
+            startButton.textContent = 'เริ่ม';
+            markButton.disabled = false;
+            
+            playStartSound(); 
+            
+            timerInterval = setInterval(timerTick, 10);
+        }
+
+        function markTime() {
+            if (!isRunning) return;
+            
+            playMarkSound(); 
+            
+            const elapsedTime = (Date.now() - startTime) / 1000;
+            lapTimes.push(elapsedTime);
+            
+            const li = document.createElement('li');
+            li.className = 'border-b border-gray-600 pb-1';
+            li.textContent = `รอบที่ ${lapTimes.length}: ${formatTime(elapsedTime)}`;
+            lapsContainer.prepend(li);
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            timeRemaining = TOTAL_TIME;
+            lapTimes = [];
+            
+            updateDisplay();
+            lapsContainer.innerHTML = '';
+            
+            startButton.disabled = false;
+            startButton.textContent = 'เริ่ม';
+            markButton.disabled = true;
+            
+            resetAlarm();
+        }
+
+        function resetAlarm() {
+            alarmMessage.textContent = '';
+            appBody.classList.remove('alarm-active');
+        }
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', startTimer);
+        markButton.addEventListener('click', markTime);
+        resetButton.addEventListener('click', resetTimer);
+
+        // --- Initial State ---
+        updateDisplay();
+        markButton.disabled = true;
+
+    </script>
+</body>
+</html>
