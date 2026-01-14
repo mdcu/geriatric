@@ -8,7 +8,7 @@ updated: 18 January 2025
 
 ## Activity
 * สถานที่ คลินิกผู้สูงวัยสุขภาพดี ส.ธ. 4
-* นิสิตในแต่ละวันแบ่งเป็น 4 กลุ่ม กลุ่มละ 12-13 คน  [ดูรายชื่อ](https://docs.google.com/spreadsheets/d/e/2PACX-1vTi27CKuSjust5QRgeUjbHxzmcd28tZzudpO7jMiIJNRpKGk-yioqR_Y2E_dElLULyyY6bOQoD8Bt_8/pubhtml) ขอให้ดูว่าตนเองเริ่มที่ฐานไหนเพื่อไปเริ่มต้นให้ถูกต้อง
+* นิสิตในแต่ละวันแบ่งเป็น 4 กลุ่ม กลุ่มละ 12-13 คน  [ดูรายชื่อ](https://docs.google.com/spreadsheets/d/e/2PACX-1vTUfqhf-v7srKLmxg7e6BA93kMVFxUaPY4nbSAxaLes_tKUS9gV896tDu4EFb0qpUbs6DMfjMP6LdDk/pubhtml?gid=0&single=true) ขอให้ดูว่าตนเองเริ่มที่ฐานไหนเพื่อไปเริ่มต้นให้ถูกต้อง
 * กิจกรรมแบบ workshop 4 ฐาน ฐานละ 35 นาที ประกอบด้วย
   *  ฐาน activities of daily living โดยทีมนักกิจกรรมบำบัด (occupational therapist)
   *  ฐาน falls and poor mobility โดยทีมนักกายภาพบำบัด (physical therapist)
