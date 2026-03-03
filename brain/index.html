@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบทดสอบสมองและสมาธิ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .symbol-btn { transition: all 0.1s ease; }
+        .symbol-btn:active { transform: scale(0.9); }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
+        .hidden-digit { visibility: hidden; }
+        
+        #counting-area {
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            margin: 0 auto;
+            border: 4px solid #e5e7eb;
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        /* ขนาดสัญลักษณ์ 20px */
+        .game-object {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start overflow-hidden">
+
+    <div id="app" class="w-full max-w-2xl h-screen bg-white shadow-2xl flex flex-col relative">
+        
+        <!-- Key Panel (Visible in Game 1) -->
+        <div id="key-panel" class="hidden p-4 bg-gray-50 border-b-4 border-gray-200">
+            <div class="flex justify-center gap-1 sm:gap-2"></div>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="flex-1 flex flex-col items-center justify-between p-6 overflow-hidden">
+            
+            <!-- 1. Start Screen with Form -->
+            <div id="start-screen" class="flex flex-col items-center justify-center h-full text-center w-full">
+                <h1 class="text-4xl font-bold mb-8 text-blue-800">ลงทะเบียนทดสอบ</h1>
+                <div class="w-full max-w-sm space-y-4 mb-8">
+                    <div class="text-left">
+                        <label class="block text-lg font-bold text-gray-700 mb-1">รหัสอาสาสมัคร (ID)</label>
+                        <input type="text" id="user-id" placeholder="ใส่ชื่อหรือรหัส" class="w-full p-4 text-xl border-4 border-gray-200 rounded-2xl focus:border-blue-500 outline-none">
+                    </div>
+                    <div class="text-left">
+                        <label class="block text-lg font-bold text-gray-700 mb-1">อายุ (1-120 ปี)</label>
+                        <input type="number" id="user-age" min="1" max="120" placeholder="ใส่ตัวเลข 1-120" class="w-full p-4 text-xl border-4 border-gray-200 rounded-2xl focus:border-blue-500 outline-none">
+                    </div>
+                </div>
+                <button onclick="showInstructions()" class="bg-blue-600 hover:bg-blue-700 text-white text-3xl font-bold px-16 py-6 rounded-3xl shadow-xl active:scale-95 transition-transform">
+                    ไปต่อ
+                </button>
+            </div>
+
+            <!-- 1.1 Instruction Screen -->
+            <div id="instruction-screen" class="hidden flex flex-col items-center justify-center h-full w-full text-center">
+                <h2 class="text-4xl font-bold mb-8 text-gray-800 border-b-4 border-blue-600 pb-2">คำแนะนำการเล่น</h2>
+                <div class="space-y-8 text-left w-full mb-10">
+                    <div class="bg-white p-8 rounded-2xl border-l-8 border-blue-600 shadow-sm">
+                        <h3 class="text-3xl font-bold text-blue-700 mb-4">เกมที่ 1 "จับคู่รหัสสัญลักษณ์"</h3>
+                        <p class="text-2xl text-gray-700 leading-relaxed">ดูตัวเลขที่ปรากฏตรงกลางหน้าจอ แล้วกดเลือกสัญลักษณ์ที่คู่กับตัวเลขนั้นจากตารางด้านบนให้ถูกต้อง</p>
+                    </div>
+                </div>
+                <button onclick="startLevel1()" class="bg-green-600 hover:bg-green-700 text-white text-4xl font-bold px-16 py-8 rounded-3xl shadow-xl active:scale-95 transition-transform w-full">
+                    เข้าใจแล้ว เริ่มเกม
+                </button>
+            </div>
+
+            <!-- 2. Game 1 Screen -->
+            <div id="game-screen-l1" class="hidden w-full flex-1 flex flex-col items-center justify-between py-4">
+                <div class="flex-1 flex items-center justify-center">
+                    <div id="central-digit" class="text-[14rem] sm:text-[16rem] font-black leading-none select-none">?</div>
+                </div>
+                <div id="button-container-l1" class="w-full grid grid-cols-4 sm:grid-cols-7 gap-3 mb-4"></div>
+            </div>
+
+            <!-- 3. Result 1 / Intro 2 -->
+            <div id="transition-screen" class="hidden w-full h-full flex flex-col items-center justify-center text-center">
+                <h2 class="text-3xl font-bold text-blue-600 mb-4">จบเกมที่ 1</h2>
+                <div class="bg-gray-50 p-8 rounded-3xl border-4 border-gray-200 w-full mb-8 text-center">
+                    <div class="text-xl text-gray-600 mb-2 font-bold">ผลคะแนนของคุณ (เฉพาะช่วงทดสอบจริง)</div>
+                    <div id="l1-summary-text" class="text-3xl font-bold text-gray-800 leading-relaxed"></div>
+                </div>
+                <div class="bg-blue-50 p-8 rounded-3xl border-4 border-blue-200 w-full mb-8">
+                    <h3 class="text-2xl font-bold text-blue-800 mb-4">ต่อไป</h3>
+                    <p class="text-2xl font-bold text-blue-700 mb-2 underline">เกมที่ 2 "นับวงกลมสีน้ำเงิน แล้วกดตอบว่ามีกี่วง"</p>
+                    <p class="text-2xl font-bold text-red-600 uppercase">ห้ามใช้นิ้วจิ้มหน้าจอตอนนับ</p>
+                </div>
+                <button onclick="startLevel2()" class="bg-green-600 hover:bg-green-700 text-white text-3xl font-bold px-16 py-6 rounded-3xl shadow-xl active:scale-95 transition-transform w-full">
+                    เริ่มเกมที่ 2
+                </button>
+            </div>
+
+            <!-- 4. Game 2 Screen -->
+            <div id="game-screen-l2" class="hidden w-full h-full flex flex-col items-center">
+                <div class="w-full text-center mb-4">
+                    <p class="text-2xl font-bold text-blue-700">เกมนับจำนวนวงกลมสีน้ำเงิน</p>
+                    <p class="text-lg font-bold text-red-600">ห้ามใช้นิ้วจิ้มหน้าจอ</p>
+                </div>
+                <div id="counting-area"></div>
+                <div class="w-full mt-6 grid grid-cols-5 gap-2">
+                    <script>
+                        for(let i=1; i<=20; i++) {
+                            document.write(`<button onclick="handleL2Input(${i})" class="bg-white border-2 border-gray-300 rounded-xl h-14 sm:h-16 text-2xl font-bold hover:bg-blue-50 active:scale-90 shadow-sm">${i}</button>`);
+                        }
+                    </script>
+                </div>
+            </div>
+
+            <!-- 5. Final Result -->
+            <div id="final-screen" class="hidden w-full h-full flex flex-col items-center pt-4">
+                <h2 class="text-4xl font-bold text-gray-800 mb-6">สรุปผลการทดสอบ</h2>
+                <div id="final-report" class="w-full space-y-4 mb-8 overflow-y-auto pr-2"></div>
+                <p class="text-gray-400 text-sm mb-4 italic text-center">*ข้อมูลถูกบันทึกใน Console เรียบร้อยแล้ว (JSON format)</p>
+                <button onclick="location.reload()" class="w-full bg-gray-800 text-white text-2xl font-bold py-5 rounded-2xl active:scale-95 transition-transform mt-auto">
+                    กลับหน้าแรก
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const ORIGINAL_SYMBOLS = ['—', '⊥', '⊓', '×', '⊔', '○', '△'];
+        let activeKey = []; 
+        let userData = { id: '', age: 0 };
+        
+        let l1FullLogs = []; // บันทึกทุกครั้งที่กด
+        let l1TotalClicks = 0; // เฉพาะช่วงเล่นจริง
+        let l1WrongClicks = 0; // เฉพาะช่วงเล่นจริง
+        let l2Log = null;
+        let practiceCount = 0;
+        let l1StartTime = null; // จะถูก reset เมื่อจบซ้อมข้อที่ 3
+        let l1Timer = null;
+        let l2StartTime = null;
+        let l2Timeout = null;
+        let isFlashing = false;
+        let currentDigit = null;
+        let l2CorrectCount = 0;
+        let realGameStarted = false;
+
+        function randomizeActiveKey() {
+            const shuffledSymbols = [...ORIGINAL_SYMBOLS].sort(() => Math.random() - 0.5);
+            activeKey = [];
+            for (let i = 1; i <= 7; i++) {
+                activeKey.push({ digit: i, symbol: shuffledSymbols[i-1] });
+            }
+        }
+
+        function showInstructions() {
+            const idInput = document.getElementById('user-id').value.trim();
+            const ageInput = parseInt(document.getElementById('user-age').value);
+            
+            if (!idInput) {
+                alert('กรุณากรอกรหัสอาสาสมัคร (ID)');
+                return;
+            }
+            if (isNaN(ageInput) || ageInput < 1 || ageInput > 120) {
+                alert('กรุณากรอกอายุที่ถูกต้อง (1 - 120 ปี)');
+                return;
+            }
+
+            userData.id = idInput;
+            userData.age = ageInput;
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('instruction-screen').classList.remove('hidden');
+        }
+
+        function startLevel1() {
+            randomizeActiveKey();
+            document.getElementById('instruction-screen').classList.add('hidden');
+            document.getElementById('key-panel').classList.remove('hidden');
+            document.getElementById('game-screen-l1').classList.remove('hidden');
+            
+            l1FullLogs = [];
+            l1TotalClicks = 0;
+            l1WrongClicks = 0;
+            practiceCount = 0;
+            realGameStarted = false;
+            l1StartTime = Date.now(); // เริ่มนับเวลาสำหรับการซ้อมก่อน
+            
+            renderKey();
+            nextQuestionL1();
+        }
+
+        function renderKey() {
+            const container = document.querySelector('#key-panel > div');
+            // ขยาย font แถบรหัสสัญลักษณ์ด้านบน
+            container.innerHTML = activeKey.map(item => `
+                <div class="flex flex-col border-4 border-gray-300 rounded-2xl overflow-hidden w-14 sm:w-24 bg-white shadow-md">
+                    <div class="text-center py-2 font-black text-2xl sm:text-4xl border-b-4 border-gray-300 bg-gray-50">${item.digit}</div>
+                    <div class="text-center py-3 text-4xl sm:text-6xl font-bold text-blue-600">${item.symbol}</div>
+                </div>
+            `).join('');
+        }
+
+        function nextQuestionL1() {
+            currentDigit = activeKey[Math.floor(Math.random() * activeKey.length)].digit;
+            document.getElementById('central-digit').innerText = currentDigit;
+            document.getElementById('central-digit').classList.remove('hidden-digit');
+            renderButtonsL1();
+        }
+
+        function renderButtonsL1() {
+            const container = document.getElementById('button-container-l1');
+            const shuffled = [...activeKey].sort(() => Math.random() - 0.5);
+            container.innerHTML = shuffled.map(item => `
+                <button onclick="handleL1Input(${item.digit}, this)" class="symbol-btn h-24 sm:h-32 bg-white border-4 border-gray-300 rounded-3xl text-5xl sm:text-6xl font-bold text-gray-800 shadow-md">
+                    ${item.symbol}
+                </button>
+            `).join('');
+        }
+
+        function handleL1Input(clickedDigit, btnEl) {
+            if (isFlashing) return;
+            const isCorrect = clickedDigit === currentDigit;
+            const correctItem = activeKey.find(k => k.digit === currentDigit);
+            const clickedItem = activeKey.find(k => k.digit === clickedDigit);
+
+            // บันทึก Log ทุกครั้งที่กด
+            let now = Date.now();
+            let timeElapsed = ((now - l1StartTime) / 1000).toFixed(3);
+            let label = "";
+
+            if (!realGameStarted) {
+                label = `ซ้อม ${practiceCount + 1}`;
+            } else {
+                l1TotalClicks++;
+                if (!isCorrect) l1WrongClicks++;
+                // นับจำนวนข้อจริงโดยลบข้อซ้อมออก
+                let realQuestionNo = l1FullLogs.filter(l => !l.ข้อที่.startsWith('ซ้อม')).length + 1;
+                label = `${realQuestionNo}`;
+            }
+
+            l1FullLogs.push({
+                "ข้อที่": label,
+                "เฉลย": `${currentDigit} (${correctItem.symbol})`,
+                "กดอะไร": `${clickedDigit} (${clickedItem.symbol})`,
+                "สถานะ": isCorrect ? "ถูก" : "ผิด",
+                "เวลาที่กด": timeElapsed
+            });
+
+            if (isCorrect) {
+                if (!realGameStarted) {
+                    practiceCount++;
+                    if (practiceCount === 3) {
+                        realGameStarted = true;
+                        l1StartTime = Date.now(); // RESET เวลาเป็น 0 สำหรับเริ่มเกมจริง
+                        l1Timer = setTimeout(endLevel1, 60000);
+                    }
+                }
+                
+                isFlashing = true;
+                document.getElementById('central-digit').classList.add('hidden-digit');
+                setTimeout(() => { isFlashing = false; nextQuestionL1(); }, 250);
+            } else {
+                btnEl.classList.add('bg-red-500', 'border-red-700', 'text-white', 'animate-shake');
+            }
+        }
+
+        function endLevel1() {
+            document.getElementById('game-screen-l1').classList.add('hidden');
+            document.getElementById('key-panel').classList.add('hidden');
+            document.getElementById('transition-screen').classList.remove('hidden');
+            
+            // กรองเอาเฉพาะช่วงเล่นจริงมาสรุปผล
+            const realLogs = l1FullLogs.filter(l => !l.ข้อที่.startsWith('ซ้อม'));
+            const correct = realLogs.filter(l => l.สถานะ === "ถูก").length;
+            const acc = l1TotalClicks > 0 ? Math.round((correct / l1TotalClicks) * 100) : 0;
+            
+            document.getElementById('l1-summary-text').innerHTML = `
+                กดถูกทั้งหมด <span class="text-blue-600 text-5xl font-black">${correct}</span> ข้อ<br>
+                ความแม่นยำ <span class="text-green-600 font-bold">${acc}%</span><br>
+                <span class="text-lg text-gray-500 font-bold">(กดผิด ${l1WrongClicks} ครั้งจากทั้งหมด ${l1TotalClicks} ครั้ง)</span>
+            `;
+        }
+
+        function startLevel2() {
+            document.getElementById('transition-screen').classList.add('hidden');
+            document.getElementById('game-screen-l2').classList.remove('hidden');
+            generateL2Task();
+            l2StartTime = Date.now();
+            l2Timeout = setTimeout(() => { if (!l2Log) handleL2Input(null); }, 30000);
+        }
+
+        function generateL2Task() {
+            const area = document.getElementById('counting-area');
+            area.innerHTML = '';
+            l2CorrectCount = Math.floor(Math.random() * (14 - 7 + 1)) + 7;
+            const otherCount = 21 - l2CorrectCount;
+            const greenCount = Math.floor(Math.random() * (otherCount - 1)) + 1;
+            const squareCount = otherCount - greenCount;
+            const items = [];
+            for(let i=0; i<l2CorrectCount; i++) items.push({type: 'circle', color: 'bg-blue-600'});
+            for(let i=0; i<greenCount; i++) items.push({type: 'circle', color: 'bg-green-600'});
+            for(let i=0; i<squareCount; i++) items.push({type: 'square', color: 'bg-blue-600'});
+            
+            const placedPositions = [];
+            items.forEach(item => {
+                let pos; let overlap = true; let attempts = 0;
+                while(overlap && attempts < 500) {
+                    pos = { x: Math.random() * 440 + 30, y: Math.random() * 440 + 30 };
+                    // ระยะห่างระหว่างจุดศูนย์กลางต้องห่างกันอย่างน้อย 30 พิกเซล
+                    overlap = placedPositions.some(p => Math.sqrt(Math.pow(p.x - pos.x, 2) + Math.pow(p.y - pos.y, 2)) < 30);
+                    attempts++;
+                }
+                placedPositions.push(pos);
+                const el = document.createElement('div');
+                el.className = `game-object ${item.color} ${item.type === 'circle' ? 'rounded-full' : ''} shadow-sm`;
+                el.style.left = `${(pos.x / 500) * 100}%`;
+                el.style.top = `${(pos.y / 500) * 100}%`;
+                area.appendChild(el);
+            });
+        }
+
+        function handleL2Input(num) {
+            if (l2Log) return;
+            clearTimeout(l2Timeout);
+            l2Log = {
+                correctAnswer: l2CorrectCount,
+                userAnswer: num === null ? 'NA' : num,
+                isCorrect: num === l2CorrectCount,
+                time: ((Date.now() - l2StartTime) / 1000).toFixed(2)
+            };
+            showFinalResult();
+        }
+
+        function showFinalResult() {
+            document.getElementById('game-screen-l2').classList.add('hidden');
+            document.getElementById('final-screen').classList.remove('hidden');
+            
+            const realLogs = l1FullLogs.filter(l => !l.ข้อที่.startsWith('ซ้อม'));
+            const l1Correct = realLogs.filter(l => l.สถานะ === "ถูก").length;
+            const l1Acc = l1TotalClicks > 0 ? Math.round((l1Correct / l1TotalClicks) * 100) : 0;
+            
+            const finalData = {
+                id: userData.id,
+                age: userData.age,
+                symbol_detail: l1FullLogs, // บันทึกทุกครั้งราย interaction
+                symbol_correct: l1Correct,
+                symbol_precision: l1Acc,
+                count_result: {
+                    status: l2Log.userAnswer === 'NA' ? 'NA' : (l2Log.isCorrect ? 'T' : 'F'),
+                    time: l2Log.userAnswer === 'NA' ? 'NA' : l2Log.time
+                }
+            };
+
+            // เพิ่มโค้ดนี้ไว้ท้ายสุดของฟังก์ชัน showFinalResult
+            const webhookUrl = 'https://playground.n8n.md.chula.ac.th/webhook/iAttention'; // ใส่ URL ของ n8n ที่นี่
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(finalData),
+            })
+            .then(async response => {
+    if (response.ok) {
+        const result = await response.json(); // Read the JSON from n8n
+        console.log("Success:", result.message);
+        alert(`Saved! Submission ID: ${result.submission_id}`);
+    } else {
+        console.error("Server error:", response.statusText);
+    }
+})
+.catch(error => {
+    console.error("Network error:", error);
+});
+
+            console.log("--- FINAL TEST RESULT JSON ---");
+            console.log(JSON.stringify(finalData, null, 2));
+
+            const report = document.getElementById('final-report');
+            report.innerHTML = `
+                <div class="p-6 bg-blue-50 rounded-2xl border-2 border-blue-200">
+                    <h4 class="font-bold text-blue-800 mb-2">ข้อมูลผู้ทดสอบ</h4>
+                    <p class="text-xl">ID: <strong>${userData.id}</strong> | อายุ: <strong>${userData.age} ปี</strong></p>
+                </div>
+                <div class="p-6 bg-white rounded-2xl border-2 border-gray-200 shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-2 underline">เกมที่ 1: จับคู่รหัสสัญลักษณ์</h4>
+                    <p class="text-xl">จำนวนที่กดถูก: <strong>${l1Correct} ข้อ</strong></p>
+                    <p class="text-xl text-gray-600 font-bold">กดผิด ${l1WrongClicks} ครั้ง จากการกดทั้งหมด ${l1TotalClicks} ครั้ง (${l1Acc}%)</p>
+                </div>
+                <div class="p-6 ${l2Log.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} rounded-2xl border-2 shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-2 underline">เกมที่ 2: นับวงกลมสีน้ำเงิน</h4>
+                    <p class="text-xl">คำตอบที่ถูก: <strong>${l2Log.correctAnswer}</strong> | คุณตอบ: <strong>${l2Log.userAnswer}</strong></p>
+                    <p class="text-xl">สถานะ: <strong>${l2Log.isCorrect ? '✅ ถูกต้อง' : (l2Log.userAnswer === 'NA' ? '⚠️ ไม่ได้ตอบ' : '❌ ผิด')}</strong></p>
+                    <p class="text-xl">เวลาที่ใช้: <strong>${l2Log.userAnswer === 'NA' ? '-' : l2Log.time + ' วินาที'}</strong></p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
