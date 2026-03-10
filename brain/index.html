@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>แบบทดสอบสมองและสมาธิ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
             -webkit-tap-highlight-color: transparent;
             /* ป้องกันการ scroll ของ body หลัก */
             overflow: hidden; 
+            background-color: #f3f4f6;
         }
         .symbol-btn { transition: all 0.1s ease; }
         .symbol-btn:active { transform: scale(0.9); }
@@ -27,7 +28,7 @@
         #counting-area {
             aspect-ratio: 1 / 1;
             width: 100%;
-            max-width: 500px;
+            max-width: min(400px, 70vh); /* ปรับให้เตี้ยลงเพื่อไม่ให้ดันจอ */
             position: relative;
             margin: 0 auto;
             border: 4px solid #e5e7eb;
@@ -43,56 +44,69 @@
             transform: translate(-50%, -50%);
         }
 
-        /* สำหรับหน้าจอ DVH */
+        /* สำหรับหน้าจอ DVH และ Safe Area ของ iPhone */
         .full-h {
             height: 100vh;
             height: 100dvh;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* ปรับแต่ง scrollbar สำหรับส่วนที่เลื่อนได้ */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center justify-start">
+<body class="flex flex-col items-center justify-start">
 
     <div id="app" class="w-full max-w-2xl full-h bg-white shadow-2xl flex flex-col relative overflow-hidden">
         
         <!-- ส่วนแจ้งเตือน (แทน Alert) -->
-        <div id="msg-box" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-black/80 text-white px-6 py-3 rounded-full text-lg font-bold transition-opacity duration-300"></div>
+        <div id="msg-box" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-black/80 text-white px-6 py-3 rounded-full text-lg font-bold transition-opacity duration-300 whitespace-nowrap"></div>
 
         <!-- Key Panel (Visible in Game 1) -->
-        <div id="key-panel" class="hidden p-4 bg-gray-50 border-b-4 border-gray-200 flex-shrink-0">
+        <div id="key-panel" class="hidden p-2 sm:p-4 bg-gray-50 border-b-2 sm:border-b-4 border-gray-200 flex-shrink-0">
             <div class="flex justify-center gap-1 sm:gap-2"></div>
         </div>
 
         <!-- Main Workspace -->
-        <div class="flex-1 flex flex-col items-center justify-between p-4 sm:p-6 overflow-y-auto overflow-x-hidden">
+        <div class="flex-1 flex flex-col items-center justify-between p-4 sm:p-6 overflow-y-auto overflow-x-hidden custom-scroll">
             
             <!-- 1. Start Screen with Form -->
             <div id="start-screen" class="flex flex-col items-center justify-center min-h-full text-center w-full py-4">
-                <h1 class="text-4xl font-bold mb-8 text-blue-800">ลงทะเบียนทดสอบ</h1>
+                <h1 class="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-blue-800">ลงทะเบียนทดสอบ</h1>
                 <div class="w-full max-w-sm space-y-4 mb-8">
                     <div class="text-left">
                         <label class="block text-lg font-bold text-gray-700 mb-1">รหัสอาสาสมัคร (ID)</label>
-                        <input type="text" id="user-id" placeholder="ใส่ชื่อหรือรหัส" class="w-full p-4 text-xl border-4 border-gray-200 rounded-2xl focus:border-blue-500 outline-none">
+                        <input type="text" id="user-id" placeholder="ใส่ชื่อหรือรหัส" class="w-full p-3 sm:p-4 text-xl border-4 border-gray-200 rounded-2xl focus:border-blue-500 outline-none">
                     </div>
                     <div class="text-left">
                         <label class="block text-lg font-bold text-gray-700 mb-1">อายุ (1-120 ปี)</label>
-                        <input type="number" id="user-age" min="1" max="120" placeholder="ใส่ตัวเลข 1-120" class="w-full p-4 text-xl border-4 border-gray-200 rounded-2xl focus:border-blue-500 outline-none">
+                        <input type="number" id="user-age" min="1" max="120" placeholder="ใส่ตัวเลข 1-120" class="w-full p-3 sm:p-4 text-xl border-4 border-gray-200 rounded-2xl focus:border-blue-500 outline-none">
                     </div>
                 </div>
-                <button onclick="showInstructions()" class="bg-blue-600 hover:bg-blue-700 text-white text-3xl font-bold px-16 py-6 rounded-3xl shadow-xl active:scale-95 transition-transform">
+                <button onclick="showInstructions()" class="bg-blue-600 hover:bg-blue-700 text-white text-2xl sm:text-3xl font-bold px-12 sm:px-16 py-4 sm:py-6 rounded-3xl shadow-xl active:scale-95 transition-transform">
                     ไปต่อ
                 </button>
             </div>
 
             <!-- 1.1 Instruction Screen -->
             <div id="instruction-screen" class="hidden flex flex-col items-center justify-center min-h-full w-full text-center py-4">
-                <h2 class="text-4xl font-bold mb-8 text-gray-800 border-b-4 border-blue-600 pb-2">คำแนะนำการเล่น</h2>
-                <div class="space-y-8 text-left w-full mb-10">
-                    <div class="bg-white p-8 rounded-2xl border-l-8 border-blue-600 shadow-sm">
-                        <h3 class="text-3xl font-bold text-blue-700 mb-4">เกมที่ 1 "จับคู่รหัสสัญลักษณ์"</h3>
-                        <p class="text-2xl text-gray-700 leading-relaxed">ดูตัวเลขที่ปรากฏตรงกลางหน้าจอ แล้วกดเลือกสัญลักษณ์ที่คู่กับตัวเลขนั้นจากตารางด้านบนให้ถูกต้อง</p>
+                <h2 class="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-gray-800 border-b-4 border-blue-600 pb-2">คำแนะนำการเล่น</h2>
+                <div class="space-y-6 text-left w-full mb-10">
+                    <div class="bg-white p-6 sm:p-8 rounded-2xl border-l-8 border-blue-600 shadow-sm">
+                        <h3 class="text-2xl sm:text-3xl font-bold text-blue-700 mb-4">เกมที่ 1 "จับคู่รหัสสัญลักษณ์"</h3>
+                        <p class="text-xl sm:text-2xl text-gray-700 leading-relaxed">ดูตัวเลขที่ปรากฏตรงกลางหน้าจอ แล้วกดเลือกสัญลักษณ์ที่คู่กับตัวเลขนั้นจากตารางด้านบนให้ถูกต้อง</p>
                     </div>
                 </div>
-                <button onclick="startLevel1()" class="bg-green-600 hover:bg-green-700 text-white text-4xl font-bold px-16 py-8 rounded-3xl shadow-xl active:scale-95 transition-transform w-full">
+                <button onclick="startLevel1()" class="bg-green-600 hover:bg-green-700 text-white text-3xl sm:text-4xl font-bold px-12 sm:px-16 py-6 sm:py-8 rounded-3xl shadow-xl active:scale-95 transition-transform w-full">
                     เข้าใจแล้ว เริ่มเกม
                 </button>
             </div>
@@ -100,7 +114,7 @@
             <!-- 2. Game 1 Screen -->
             <div id="game-screen-l1" class="hidden w-full h-full flex flex-col items-center justify-between py-2 overflow-hidden">
                 <div class="flex-1 flex items-center justify-center min-h-0">
-                    <div id="central-digit" class="text-[12rem] sm:text-[14rem] md:text-[16rem] font-black leading-none select-none">?</div>
+                    <div id="central-digit" class="text-[10rem] sm:text-[14rem] md:text-[16rem] font-black leading-none select-none">?</div>
                 </div>
                 <div id="button-container-l1" class="w-full grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3 mb-2 flex-shrink-0"></div>
             </div>
@@ -108,18 +122,18 @@
             <!-- 3. Result 1 / Intro 2 -->
             <div id="transition-screen" class="hidden w-full min-h-full flex flex-col items-center justify-center text-center py-4">
                 <h2 class="text-3xl font-bold text-blue-600 mb-4">จบเกมที่ 1</h2>
-                <div class="bg-gray-50 p-6 sm:p-8 rounded-3xl border-4 border-gray-200 w-full mb-6 text-center">
-                    <div class="text-xl text-gray-600 mb-2 font-bold">ผลคะแนนของคุณ</div>
+                <div class="bg-gray-50 p-6 sm:p-8 rounded-3xl border-2 sm:border-4 border-gray-200 w-full mb-6 text-center">
+                    <div class="text-lg sm:text-xl text-gray-600 mb-2 font-bold">ผลคะแนนของคุณ (เฉพาะช่วงทดสอบจริง)</div>
                     <div id="l1-summary-text" class="text-2xl sm:text-3xl font-bold text-gray-800 leading-relaxed"></div>
                 </div>
                 
-                <div class="bg-blue-50 p-6 sm:p-8 rounded-3xl border-4 border-blue-200 w-full mb-6">
-                    <h3 class="text-2xl font-bold text-blue-800 mb-4">ต่อไป</h3>
-                    <p class="text-2xl font-bold text-blue-700 mb-2 underline">เกมที่ 2 "นับวงกลมสีน้ำเงิน แล้วกดตอบว่ามีกี่วง"</p>
-                    <p class="text-2xl font-bold text-red-600 uppercase">ห้ามใช้นิ้วจิ้มหน้าจอตอนนับ</p>
+                <div class="bg-blue-50 p-6 sm:p-8 rounded-3xl border-2 sm:border-4 border-blue-200 w-full mb-6">
+                    <h3 class="text-xl sm:text-2xl font-bold text-blue-800 mb-4">ต่อไป</h3>
+                    <p class="text-xl sm:text-2xl font-bold text-blue-700 mb-2 underline">เกมที่ 2 "นับวงกลมสีน้ำเงิน แล้วกดตอบว่ามีกี่วง"</p>
+                    <p class="text-xl sm:text-2xl font-bold text-red-600 uppercase">ห้ามใช้นิ้วจิ้มหน้าจอตอนนับ</p>
                 </div>
                 
-                <button onclick="startLevel2()" class="bg-green-600 hover:bg-green-700 text-white text-3xl font-bold px-16 py-6 rounded-3xl shadow-xl active:scale-95 transition-transform w-full">
+                <button onclick="startLevel2()" class="bg-green-600 hover:bg-green-700 text-white text-2xl sm:text-3xl font-bold px-12 sm:px-16 py-5 sm:py-6 rounded-3xl shadow-xl active:scale-95 transition-transform w-full">
                     เริ่มเกมที่ 2
                 </button>
             </div>
@@ -127,14 +141,14 @@
             <!-- 4. Game 2 Screen -->
             <div id="game-screen-l2" class="hidden w-full h-full flex flex-col items-center py-2 overflow-hidden">
                 <div class="w-full text-center mb-2 flex-shrink-0">
-                    <p class="text-2xl font-bold text-blue-700">เกมนับจำนวนวงกลมสีน้ำเงิน</p>
-                    <p class="text-lg font-bold text-red-600">ห้ามใช้นิ้วจิ้มหน้าจอ</p>
+                    <p class="text-xl sm:text-2xl font-bold text-blue-700">เกมนับจำนวนวงกลมสีน้ำเงิน</p>
+                    <p class="text-base sm:text-lg font-bold text-red-600">ห้ามใช้นิ้วจิ้มหน้าจอ</p>
                 </div>
                 <div id="counting-area" class="flex-shrink-0"></div>
-                <div class="w-full mt-4 grid grid-cols-5 gap-2 mb-2 flex-shrink-0">
+                <div class="w-full mt-auto grid grid-cols-5 gap-1.5 sm:gap-2 pt-4 pb-2 flex-shrink-0">
                     <script>
                         for(let i=1; i<=20; i++) {
-                            document.write(`<button onclick="handleL2Input(${i})" class="bg-white border-2 border-gray-300 rounded-xl h-12 sm:h-16 text-2xl font-bold hover:bg-blue-50 active:scale-90 shadow-sm">${i}</button>`);
+                            document.write(`<button onclick="handleL2Input(${i})" class="bg-white border-2 border-gray-300 rounded-xl h-11 sm:h-16 text-xl sm:text-2xl font-bold hover:bg-blue-50 active:scale-90 shadow-sm">${i}</button>`);
                         }
                     </script>
                 </div>
@@ -142,9 +156,9 @@
 
             <!-- 5. Final Result -->
             <div id="final-screen" class="hidden w-full flex flex-col items-center py-4 min-h-full">
-                <h2 class="text-4xl font-bold text-gray-800 mb-6">สรุปผลการทดสอบ</h2>
-                <div id="final-report" class="w-full space-y-4 mb-8 overflow-y-visible pr-2"></div>
-                <p class="text-gray-400 text-sm mb-4 italic text-center">*ข้อมูลถูกบันทึกใน Console เรียบร้อยแล้ว (JSON format)</p>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-6">สรุปผลการทดสอบ</h2>
+                <div id="final-report" class="w-full space-y-4 mb-8"></div>
+                <p class="text-gray-400 text-sm mb-4 italic text-center">*ข้อมูลถูกบันทึกเรียบร้อยแล้ว</p>
                 <button onclick="location.reload()" class="w-full bg-gray-800 text-white text-2xl font-bold py-5 rounded-2xl active:scale-95 transition-transform mt-auto">
                     กลับหน้าแรก
                 </button>
@@ -229,9 +243,9 @@
         function renderKey() {
             const container = document.querySelector('#key-panel > div');
             container.innerHTML = activeKey.map(item => `
-                <div class="flex flex-col border-4 border-gray-300 rounded-2xl overflow-hidden w-14 sm:w-24 bg-white shadow-md">
-                    <div class="text-center py-2 font-black text-2xl sm:text-4xl border-b-4 border-gray-300 bg-gray-50">${item.digit}</div>
-                    <div class="text-center py-3 text-4xl sm:text-6xl font-bold text-blue-600">${item.symbol}</div>
+                <div class="flex flex-col border-2 sm:border-4 border-gray-300 rounded-xl sm:rounded-2xl overflow-hidden w-11 sm:w-24 bg-white shadow-md">
+                    <div class="text-center py-1 sm:py-2 font-black text-lg sm:text-4xl border-b-2 sm:border-b-4 border-gray-300 bg-gray-50">${item.digit}</div>
+                    <div class="text-center py-2 sm:py-3 text-xl sm:text-6xl font-bold text-blue-600">${item.symbol}</div>
                 </div>
             `).join('');
         }
@@ -247,7 +261,7 @@
             const container = document.getElementById('button-container-l1');
             const shuffled = [...activeKey].sort(() => Math.random() - 0.5);
             container.innerHTML = shuffled.map(item => `
-                <button onclick="handleL1Input(${item.digit}, this)" class="symbol-btn h-24 sm:h-32 bg-white border-4 border-gray-300 rounded-3xl text-5xl sm:text-6xl font-bold text-gray-800 shadow-md">
+                <button onclick="handleL1Input(${item.digit}, this)" class="symbol-btn h-16 sm:h-32 bg-white border-2 sm:border-4 border-gray-300 rounded-xl sm:rounded-3xl text-3xl sm:text-6xl font-bold text-gray-800 shadow-md">
                     ${item.symbol}
                 </button>
             `).join('');
@@ -308,9 +322,9 @@
             const acc = l1TotalClicks > 0 ? Math.round((correct / l1TotalClicks) * 100) : 0;
             
             document.getElementById('l1-summary-text').innerHTML = `
-                กดถูกทั้งหมด <span class="text-blue-600 text-5xl font-black">${correct}</span> ข้อ<br>
+                กดถูกทั้งหมด <span class="text-blue-600 text-4xl font-black">${correct}</span> ข้อ<br>
                 ความแม่นยำ <span class="text-green-600 font-bold">${acc}%</span><br>
-                <span class="text-lg text-gray-500 font-bold">(กดผิด ${l1WrongClicks} ครั้งจากทั้งหมด ${l1TotalClicks} ครั้ง)</span>
+                <span class="text-base text-gray-500 font-bold">(กดผิด ${l1WrongClicks} ครั้งจากทั้งหมด ${l1TotalClicks} ครั้ง)</span>
             `;
         }
 
@@ -396,15 +410,15 @@
                 if (response.ok) {
                     const result = await response.json(); 
                     console.log("Success:", result.message);
-                    showMessage(`บันทึกเรียบร้อย! รหัสอ้างอิง: ${result.submission_id || 'OK'}`);
+                    showMessage(`บันทึกเรียบร้อย!`);
                 } else {
                     console.error("Server error:", response.statusText);
-                    showMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
+                    showMessage("เกิดข้อผิดพลาดในการบันทึก", true);
                 }
             })
             .catch(error => {
                 console.error("Network error:", error);
-                showMessage("ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้", true);
+                showMessage("ไม่สามารถเชื่อมต่อฐานข้อมูลได้", true);
             });
 
             console.log("--- FINAL TEST RESULT JSON ---");
@@ -412,20 +426,20 @@
 
             const report = document.getElementById('final-report');
             report.innerHTML = `
-                <div class="p-6 bg-blue-50 rounded-2xl border-2 border-blue-200">
-                    <h4 class="font-bold text-blue-800 mb-2">ข้อมูลผู้ทดสอบ</h4>
-                    <p class="text-xl">ID: <strong>${userData.id}</strong> | อายุ: <strong>${userData.age} ปี</strong></p>
+                <div class="p-4 sm:p-6 bg-blue-50 rounded-2xl border-2 border-blue-200">
+                    <h4 class="font-bold text-blue-800 mb-1 sm:mb-2">ข้อมูลผู้ทดสอบ</h4>
+                    <p class="text-lg sm:text-xl">ID: <strong>${userData.id}</strong> | อายุ: <strong>${userData.age} ปี</strong></p>
                 </div>
-                <div class="p-6 bg-white rounded-2xl border-2 border-gray-200 shadow-sm">
-                    <h4 class="font-bold text-blue-800 mb-2 underline">เกมที่ 1: จับคู่รหัสสัญลักษณ์</h4>
-                    <p class="text-xl">จำนวนที่กดถูก: <strong>${l1Correct} ข้อ</strong></p>
-                    <p class="text-xl text-gray-600 font-bold">กดผิด ${l1WrongClicks} ครั้ง จากการกดทั้งหมด ${l1TotalClicks} ครั้ง (${l1Acc}%)</p>
+                <div class="p-4 sm:p-6 bg-white rounded-2xl border-2 border-gray-200 shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-1 sm:mb-2 underline">เกมที่ 1: จับคู่รหัสสัญลักษณ์</h4>
+                    <p class="text-lg sm:text-xl">จำนวนที่กดถูก: <strong>${l1Correct} ข้อ</strong></p>
+                    <p class="text-base sm:text-lg text-gray-600 font-bold">กดผิด ${l1WrongClicks} ครั้ง จากการกดทั้งหมด ${l1TotalClicks} ครั้ง (${l1Acc}%)</p>
                 </div>
-                <div class="p-6 ${l2Log.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} rounded-2xl border-2 shadow-sm">
-                    <h4 class="font-bold text-blue-800 mb-2 underline">เกมที่ 2: นับวงกลมสีน้ำเงิน</h4>
-                    <p class="text-xl">คำตอบที่ถูก: <strong>${l2Log.correctAnswer}</strong> | คุณตอบ: <strong>${l2Log.userAnswer}</strong></p>
-                    <p class="text-xl">สถานะ: <strong>${l2Log.isCorrect ? '✅ ถูกต้อง' : (l2Log.userAnswer === 'NA' ? '⚠️ ไม่ได้ตอบ' : '❌ ผิด')}</strong></p>
-                    <p class="text-xl">เวลาที่ใช้: <strong>${l2Log.userAnswer === 'NA' ? '-' : l2Log.time + ' วินาที'}</strong></p>
+                <div class="p-4 sm:p-6 ${l2Log.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} rounded-2xl border-2 shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-1 sm:mb-2 underline">เกมที่ 2: นับวงกลมสีน้ำเงิน</h4>
+                    <p class="text-lg sm:text-xl">เฉลย: <strong>${l2Log.correctAnswer}</strong> | คุณตอบ: <strong>${l2Log.userAnswer}</strong></p>
+                    <p class="text-lg sm:text-xl">สถานะ: <strong>${l2Log.isCorrect ? '✅ ถูกต้อง' : (l2Log.userAnswer === 'NA' ? '⚠️ ไม่ได้ตอบ' : '❌ ผิด')}</strong></p>
+                    <p class="text-lg sm:text-xl">เวลาที่ใช้: <strong>${l2Log.userAnswer === 'NA' ? '-' : l2Log.time + ' วินาที'}</strong></p>
                 </div>
             `;
         }
