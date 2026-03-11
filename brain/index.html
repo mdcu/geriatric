@@ -185,11 +185,11 @@
         }
 
         function showInstructions(level) {
-            const idInput = document.getElementById('user-id').value.trim();
+            let idInput = document.getElementById('user-id').value;
             const ageInput = parseInt(document.getElementById('user-age').value);
             
             if (level === 1) {
-                if (!idInput) idInput = "anonymous";
+                if (!idInput) {idInput = "anonymous";} else {idInput = idInput.trim()}
                 if (isNaN(ageInput) || ageInput < 1 || ageInput > 120) return showMessage('กรุณากรอกอายุที่ถูกต้อง (1 - 120 ปี)', true);
                 userData.id = idInput;
                 userData.age = ageInput;
