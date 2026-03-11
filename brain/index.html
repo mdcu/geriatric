@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>เกมทดสอบสมาธิ</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -44,26 +45,33 @@
             top: 50%;
             transform: translate(-50%, -50%);
         }
+
+        .chart-container {
+            width: 100%;
+            height: 250px;
+            margin-top: 1rem;
+            display: none; 
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-start">
 
     <div id="app" class="w-full max-w-2xl full-h bg-white shadow-2xl flex flex-col relative overflow-hidden">
         
-        <!-- Msg Box -->
+        <!-- ส่วนแจ้งเตือน -->
         <div id="msg-box" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-black/80 text-white px-6 py-3 rounded-full text-lg font-bold transition-opacity duration-300 whitespace-nowrap"></div>
 
-        <!-- Key Panel (Game 1 Only) -->
+        <!-- แถบเฉลย (เฉพาะเกมที่ 1) -->
         <div id="key-panel" class="hidden p-2 sm:p-4 bg-gray-50 border-b-2 sm:border-b-4 border-gray-200 flex-shrink-0">
             <div class="flex justify-center gap-1 sm:gap-2"></div>
         </div>
 
-        <!-- Main Workspace -->
+        <!-- พื้นที่หลัก -->
         <div class="flex-1 flex flex-col items-center justify-between p-4 sm:p-6 overflow-y-auto overflow-x-hidden custom-scroll">
             
-            <!-- 1. Start Screen -->
+            <!-- 1. หน้าลงทะเบียน -->
             <div id="start-screen" class="flex flex-col items-center justify-center min-h-full text-center w-full py-4">
-                <h1 class="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-blue-800">ลงทะเบียนทดสอบ</h1>
+                <h1 class="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-blue-800 font-bold">ลงทะเบียนทดสอบ</h1>
                 <div class="w-full max-w-sm space-y-4 mb-8">
                     <div class="text-left">
                         <label class="block text-lg font-bold text-gray-700 mb-1">รหัสประจำตัว</label>
@@ -79,12 +87,12 @@
                 </button>
             </div>
 
-            <!-- Instructions Screens -->
+            <!-- หน้าคำแนะนำ -->
             <div id="instruction-screen" class="hidden flex flex-col items-center justify-center min-h-full w-full text-center py-4">
-                <h2 id="inst-title" class="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-gray-800 border-b-4 border-blue-600 pb-2"></h2>
+                <h2 id="inst-title" class="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-gray-800 border-b-4 border-blue-600 pb-2 font-bold"></h2>
                 <div class="space-y-6 text-left w-full mb-10">
                     <div class="bg-white p-6 sm:p-8 rounded-2xl border-l-8 border-blue-600 shadow-sm">
-                        <h3 id="inst-subtitle" class="text-2xl sm:text-3xl font-bold text-blue-700 mb-4"></h3>
+                        <h3 id="inst-subtitle" class="text-2xl sm:text-3xl font-bold text-blue-700 mb-4 font-bold"></h3>
                         <p id="inst-body" class="text-xl sm:text-2xl text-gray-700 leading-relaxed"></p>
                     </div>
                 </div>
@@ -93,7 +101,7 @@
                 </button>
             </div>
 
-            <!-- Game 1 Screen -->
+            <!-- หน้าเกมที่ 1 -->
             <div id="game-screen-l1" class="hidden w-full h-full flex flex-col items-center justify-between py-2 overflow-hidden">
                 <div class="flex-1 flex items-center justify-center min-h-0 relative w-full">
                     <div id="feedback-l1" class="hidden feedback-icon"></div>
@@ -102,7 +110,7 @@
                 <div id="button-container-l1" class="w-full grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3 mb-2 flex-shrink-0"></div>
             </div>
 
-            <!-- Game 2 (Stroop) Screen - Now called Game 2 in UI -->
+            <!-- หน้าเกมที่ 2 -->
             <div id="game-screen-l3" class="hidden w-full h-full flex flex-col items-center justify-between py-2 overflow-hidden">
                 <div class="flex-1 flex items-center justify-center min-h-0 relative w-full">
                     <div id="feedback-l3" class="hidden feedback-icon"></div>
@@ -111,10 +119,10 @@
                 <div id="button-container-l3" class="w-full grid grid-cols-2 gap-4 mb-4 flex-shrink-0"></div>
             </div>
 
-            <!-- Transition Screen -->
+            <!-- หน้าพักระหว่างเกม -->
             <div id="transition-screen" class="hidden w-full min-h-full flex flex-col items-center justify-center text-center py-4">
                 <h2 id="trans-title" class="text-3xl font-bold text-blue-600 mb-4 font-bold"></h2>
-                <div class="bg-gray-50 p-6 sm:p-8 rounded-3xl border-2 sm:border-4 border-gray-200 w-full mb-6 text-center">
+                <div class="bg-gray-50 p-6 sm:p-8 rounded-3xl border-2 sm:border-4 border-gray-200 w-full mb-6 text-center shadow-inner">
                     <div id="trans-subtitle" class="text-lg sm:text-xl text-gray-600 mb-2 font-bold"></div>
                     <div id="trans-summary" class="text-2xl sm:text-3xl font-bold text-gray-800 leading-relaxed"></div>
                 </div>
@@ -123,11 +131,13 @@
                 </button>
             </div>
 
-            <!-- Final Result -->
+            <!-- หน้าสรุปผลสุดท้าย -->
             <div id="final-screen" class="hidden w-full flex flex-col items-center py-4 min-h-full">
                 <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-6 font-bold">สรุปผลการทดสอบ</h2>
-                <div id="final-report" class="w-full space-y-4 mb-8"></div>
-                <p class="text-gray-400 text-sm mb-4 italic text-center">*ข้อมูลถูกบันทึกเรียบร้อยแล้ว</p>
+                
+                <div id="final-report" class="w-full space-y-8 mb-8"></div>
+
+                <p class="text-gray-400 text-sm mb-4 italic text-center">*ข้อมูลถูกบันทึกใน Console เรียบร้อยแล้ว (JSON format)</p>
                 <button onclick="location.reload()" class="w-full bg-gray-800 text-white text-2xl font-bold py-5 rounded-2xl active:scale-95 transition-transform mt-auto">
                     กลับหน้าแรก
                 </button>
@@ -138,10 +148,10 @@
 
     <script>
         /**
-         * CONFIGURATION VARIABLES
+         * CONFIGURATION
          */
         const FEEDBACK_DURATION = 400; 
-        const PLAY_TIME = 10000;       
+        const PLAY_TIME = 60000; // 60 วินาที
 
         const STROOP_COLORS = [
             { name: "แดง", hex: "#FF0000" },
@@ -167,6 +177,9 @@
         let currentDigit = null;
         let currentStroop = {};
         let realGameStarted = false;
+
+        let lastL1Digit = null;
+        let lastStroopColor = null;
 
         function showMessage(msg, isError = false) {
             const box = document.getElementById('msg-box');
@@ -195,7 +208,6 @@
                 userData.age = ageInput;
             }
 
-            // Hide all screens
             const screens = ['start-screen', 'instruction-screen', 'game-screen-l1', 'game-screen-l3', 'transition-screen', 'final-screen'];
             screens.forEach(s => document.getElementById(s).classList.add('hidden'));
             document.getElementById('key-panel').classList.add('hidden');
@@ -212,20 +224,18 @@
                 title.innerText = "คำแนะนำการเล่น";
                 subtitle.innerText = "เกมที่ 1 \"จับคู่รหัสสัญลักษณ์\"";
                 subtitle.className = "text-2xl sm:text-3xl font-bold text-blue-700 mb-4 font-bold";
-                body.innerText = "เมื่อเริ่มเกม จะมีตารางสัญลักษณ์อยู่ด้านบน และปุ่มสัญลักษณ์อยู่ด้านล่าง ให้ดูตัวเลขที่ปรากฏตรงกลางหน้าจอ แล้วกดปุ่มที่มีสัญลักษณ์ตรงกับตัวเลขนั้นจากตารางด้านบนให้ถูกต้อง";
+                body.innerText = "ดูตัวเลขตรงกลางหน้าจอ แล้วเลือกรูปสัญลักษณ์ข้างล่างที่คู่กับเลขนั้น (ดูคู่ของเลขกับสัญลักษณ์จากตารางข้างบน)";
                 btn.onclick = startLevel1;
             } else if (level === 3) {
                 title.innerText = "คำแนะนำเกมต่อไป";
-                subtitle.innerText = "เกมที่ 2 \"เลือกสีนะ ไม่ใช่ชื่อ\"";
+                subtitle.innerText = "เลือกสีนะ ไม่ใช่ชื่อ";
                 subtitle.className = "text-2xl sm:text-3xl font-bold text-blue-700 mb-4 font-bold font-bold";
-                body.innerHTML = "มองที่ <span class='font-bold text-blue-600'>สีของคำ</span> ที่ปรากฏ แล้วเลือกกดปุ่มที่ตรงกับชื่อสีนั้น <span class='text-red-600 font-bold'>ไม่ต้องสนใจความหมายของคำที่เห็น</span>";
+                // ปรับปรุงคำอธิบายตามคำขอ: สีแดงเป็นสีเขียวตัวหนา และ ปุ่มสีเขียวมีพื้นเทาเข้ม
+                body.innerHTML = "ให้กดปุ่มตาม <span class='text-blue-600 font-bold'>'สี'</span> ที่ตาเห็น ไม่ต้องสนใจว่าคำนั้นเขียนว่าสีอะไร (เช่น เห็นคำว่า <span class='text-[#00BB00] font-bold'>สีแดง</span> แต่ตัวหนังสือเป็นสีเขียว ให้กดปุ่ม <span class='bg-slate-700 text-white px-2 py-0.5 rounded shadow-sm inline-block'>สีเขียว</span>)";
                 btn.onclick = startLevel3;
             }
         }
 
-        /**
-         * GAME 1: DIGIT SYMBOL
-         */
         function startLevel1() {
             randomizeActiveKey();
             document.getElementById('instruction-screen').classList.add('hidden');
@@ -237,6 +247,7 @@
             practiceCount = 0;
             realGameStarted = false;
             gameStartTime = Date.now(); 
+            lastL1Digit = null;
             
             renderKey();
             nextQuestionL1();
@@ -253,7 +264,13 @@
         }
 
         function nextQuestionL1() {
-            currentDigit = activeKey[Math.floor(Math.random() * activeKey.length)].digit;
+            let nextDigit;
+            do {
+                nextDigit = activeKey[Math.floor(Math.random() * activeKey.length)].digit;
+            } while (nextDigit === lastL1Digit);
+            lastL1Digit = nextDigit;
+            currentDigit = nextDigit;
+
             document.getElementById('central-digit').innerText = currentDigit;
             document.getElementById('central-digit').classList.remove('hidden');
             renderButtonsL1();
@@ -286,7 +303,8 @@
                 "เฉลย": `${currentDigit} (${correctItem.symbol})`,
                 "กดอะไร": `${clickedDigit} (${clickedItem.symbol})`,
                 "สถานะ": isCorrect ? "ถูก" : "ผิด",
-                "เวลาที่กด": timeElapsed
+                "เวลาที่กด": parseFloat(timeElapsed),
+                "isCorrect": isCorrect
             });
 
             if (realGameStarted) {
@@ -315,20 +333,18 @@
             }, FEEDBACK_DURATION);
         }
 
-        /**
-         * GAME 2: STROOP TEST (Logical level 3)
-         */
         function startLevel3() {
             document.getElementById('instruction-screen').classList.add('hidden');
             document.getElementById('transition-screen').classList.add('hidden');
             document.getElementById('game-screen-l3').classList.remove('hidden');
-            document.getElementById('key-panel').classList.add('hidden'); // Ensure key panel is gone
+            document.getElementById('key-panel').classList.add('hidden');
 
             l3FullLogs = [];
             l3Stats = { total: 0, wrong: 0 };
             practiceCount = 0;
             realGameStarted = false;
             gameStartTime = Date.now();
+            lastStroopColor = null;
 
             renderStroopButtons();
             nextStroopQuestion();
@@ -345,9 +361,14 @@
         }
 
         function nextStroopQuestion() {
-            const wordIdx = Math.floor(Math.random() * STROOP_COLORS.length);
-            const colorIdx = Math.floor(Math.random() * STROOP_COLORS.length);
+            let colorIdx;
+            do {
+                colorIdx = Math.floor(Math.random() * STROOP_COLORS.length);
+            } while (STROOP_COLORS[colorIdx].hex === lastStroopColor);
             
+            const wordIdx = Math.floor(Math.random() * STROOP_COLORS.length);
+            
+            lastStroopColor = STROOP_COLORS[colorIdx].hex;
             currentStroop = {
                 word: STROOP_COLORS[wordIdx].name,
                 colorHex: STROOP_COLORS[colorIdx].hex,
@@ -378,7 +399,8 @@
                 "สีที่โชว์": currentStroop.colorName,
                 "กดสี": clickedName,
                 "สถานะ": isCorrect ? "ถูก" : "ผิด",
-                "เวลาที่กด": timeElapsed
+                "เวลาที่กด": parseFloat(timeElapsed),
+                "isCorrect": isCorrect
             });
 
             if (realGameStarted) {
@@ -406,13 +428,9 @@
             }, FEEDBACK_DURATION);
         }
 
-        /**
-         * SHARED LOGIC
-         */
         function showFeedback(isCorrect, feedbackId, hideId) {
             const f = document.getElementById(feedbackId);
             const h = document.getElementById(hideId);
-            
             h.classList.add('hidden');
             f.innerText = isCorrect ? "✅" : "❌";
             f.classList.remove('hidden');
@@ -431,21 +449,66 @@
 
             if (level === 1) {
                 title.innerText = "จบเกมที่ 1";
-                subtitle.innerText = "ผลคะแนนเกม จับคู่สัญลักษณ์";
-                const correct = l1FullLogs.filter(l => !l.ข้อที่.startsWith('ซ้อม') && l.สถานะ === "ถูก").length;
+                subtitle.innerText = "คะแนนของคุณ";
+                const realLogs = l1FullLogs.filter(l => !l.ข้อที่.toString().startsWith('ซ้อม'));
+                const correct = realLogs.filter(l => l.สถานะ === "ถูก").length;
                 const total = l1Stats.total;
                 const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
-                summary.innerHTML = `กดถูกทั้งหมด <span class="text-blue-600 text-5xl font-black">${correct}</span> ข้อ<br>ความแม่นยำ <span class="text-green-600 font-bold">${acc}%</span><br><span class="text-base text-gray-500 font-bold font-bold">(กดผิด ${l1Stats.wrong} ครั้ง)</span>`;
+                summary.innerHTML = `<div class="mb-2">ตอบถูกทั้งหมด</div><div class="text-blue-600 text-6xl font-black">${correct}</div><div class="mt-4 text-gray-500 font-bold">ความแม่นยำ ${acc}% (ผิด ${l1Stats.wrong} ครั้ง)</div>`;
                 btn.onclick = () => showInstructions(3);
             } else if (level === 3) {
                 title.innerText = "จบเกมที่ 2";
-                subtitle.innerText = "ผลคะแนนเกม เลือกสีนะ ไม่ใช่ชื่อ";
-                const correct = l3FullLogs.filter(l => !l.ข้อที่.startsWith('ซ้อม') && l.สถานะ === "ถูก").length;
+                subtitle.innerText = "คะแนนเกม เลือกสีนะ ไม่ใช่ชื่อ";
+                const realLogs = l3FullLogs.filter(l => !l.ข้อที่.toString().startsWith('ซ้อม'));
+                const correct = realLogs.filter(l => l.สถานะ === "ถูก").length;
                 const total = l3Stats.total;
                 const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
-                summary.innerHTML = `ตอบถูกทั้งหมด <span class="text-blue-600 text-5xl font-black">${correct}</span> ข้อ<br>ความแม่นยำ <span class="text-green-600 font-bold">${acc}%</span><br><span class="text-base text-gray-500 font-bold font-bold">(กดผิด ${l3Stats.wrong} ครั้ง)</span>`;
+                summary.innerHTML = `<div class="mb-2">ตอบถูกทั้งหมด</div><div class="text-blue-600 text-6xl font-black">${correct}</div><div class="mt-4 text-gray-500 font-bold">ความแม่นยำ ${acc}% (ผิด ${l3Stats.wrong} ครั้ง)</div>`;
+                btn.innerText = "ไปต่อ"; 
                 btn.onclick = showFinalResult;
             }
+        }
+
+        function createReactionTimeChart(canvasId, title, logs) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const realLogs = logs.filter(l => !l.ข้อที่.toString().startsWith('ซ้อม'));
+            if (realLogs.length === 0) return;
+
+            const dataPoints = realLogs.map((log, index) => {
+                const prevTime = index === 0 ? 0 : realLogs[index - 1].เวลาที่กด;
+                const rt = log.เวลาที่กด - prevTime;
+                return { x: log.เวลาที่กด * 1000, y: rt, isCorrect: log.isCorrect };
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Reaction Time (s)',
+                        data: dataPoints,
+                        borderColor: '#94a3b8',
+                        borderWidth: 1,
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 6,
+                        pointBackgroundColor: dataPoints.map(p => p.isCorrect ? '#3b82f6' : '#ef4444'),
+                        pointStyle: dataPoints.map(p => p.isCorrect ? 'circle' : 'crossRot')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { type: 'linear', min: 0, max: PLAY_TIME, title: { display: true, text: 'เวลา (ms)' } },
+                        y: { beginAtZero: true, title: { display: true, text: 'วินาทีต่อข้อ' } }
+                    }
+                }
+            });
+        }
+
+        function toggleChart(containerId) {
+            const container = document.getElementById(containerId);
+            container.style.display = container.style.display === 'block' ? 'none' : 'block';
         }
 
         function showFinalResult() {
@@ -453,11 +516,11 @@
             document.getElementById('transition-screen').classList.add('hidden');
             document.getElementById('final-screen').classList.remove('hidden');
             
-            const l1Real = l1FullLogs.filter(l => !l.ข้อที่.startsWith('ซ้อม'));
+            const l1Real = l1FullLogs.filter(l => !l.ข้อที่.toString().startsWith('ซ้อม'));
             const l1Correct = l1Real.filter(l => l.สถานะ === "ถูก").length;
             const l1Acc = l1Stats.total > 0 ? Math.round((l1Correct / l1Stats.total) * 100) : 0;
 
-            const l3Real = l3FullLogs.filter(l => !l.ข้อที่.startsWith('ซ้อม'));
+            const l3Real = l3FullLogs.filter(l => !l.ข้อที่.toString().startsWith('ซ้อม'));
             const l3Correct = l3Real.filter(l => l.สถานะ === "ถูก").length;
             const l3Acc = l3Stats.total > 0 ? Math.round((l3Correct / l3Stats.total) * 100) : 0;
             
@@ -484,23 +547,51 @@
             })
             .catch(error => { showMessage("ไม่สามารถเชื่อมต่อฐานข้อมูลได้", true); });
 
-            console.log("--- FINAL TEST RESULT JSON ---");
-            console.log(JSON.stringify(finalData, null, 2));
-
             const report = document.getElementById('final-report');
             report.innerHTML = `
-                <div class="p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
+                <div class="p-4 bg-blue-50 rounded-2xl border-2 border-blue-200 shadow-sm">
                     <p class="text-xl">ID: <strong>${userData.id}</strong> | อายุ: <strong>${userData.age} ปี</strong></p>
                 </div>
-                <div class="p-4 bg-white rounded-2xl border-2 border-gray-200 shadow-sm">
-                    <h4 class="font-bold text-blue-800 underline font-bold">เกมที่ 1: รหัสสัญลักษณ์</h4>
-                    <p class="text-lg">ถูก: <strong>${l1Correct} ข้อ</strong> (${l1Acc}%)</p>
+
+                <div class="p-6 bg-white rounded-3xl border-2 border-gray-200 shadow-md">
+                    <h4 class="font-bold text-blue-800 underline mb-4 font-bold">เกมที่ 1: รหัสสัญลักษณ์</h4>
+                    <div class="flex items-end gap-2 mb-2">
+                        <span class="text-gray-500 text-lg">ตอบถูก:</span>
+                        <span class="text-6xl font-black text-blue-600">${l1Correct}</span>
+                        <span class="text-xl font-bold text-gray-400">ข้อ</span>
+                    </div>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-gray-500 text-lg">ความแม่นยำ:</span>
+                        <span class="text-5xl font-black text-green-600">${l1Acc}%</span>
+                    </div>
+                    <button onclick="toggleChart('cont-l1')" class="text-4xl hover:scale-110 transition-transform p-2 bg-gray-50 rounded-xl">📊</button>
+                    <div id="cont-l1" class="chart-container">
+                        <canvas id="chart-l1"></canvas>
+                    </div>
                 </div>
-                <div class="p-4 bg-white rounded-2xl border-2 border-gray-200 shadow-sm">
-                    <h4 class="font-bold text-blue-800 underline font-bold">เกมที่ 2: Stroop Test</h4>
-                    <p class="text-lg">ถูก: <strong>${l3Correct} ข้อ</strong> (${l3Acc}%)</p>
+
+                <div class="p-6 bg-white rounded-3xl border-2 border-gray-200 shadow-md">
+                    <h4 class="font-bold text-blue-800 underline mb-4 font-bold">เกมที่ 2: เลือกสีนะ ไม่ใช่ชื่อ</h4>
+                    <div class="flex items-end gap-2 mb-2">
+                        <span class="text-gray-500 text-lg">ตอบถูก:</span>
+                        <span class="text-6xl font-black text-blue-600">${l3Correct}</span>
+                        <span class="text-xl font-bold text-gray-400">ข้อ</span>
+                    </div>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-gray-500 text-lg">ความแม่นยำ:</span>
+                        <span class="text-5xl font-black text-green-600">${l3Acc}%</span>
+                    </div>
+                    <button onclick="toggleChart('cont-l3')" class="text-4xl hover:scale-110 transition-transform p-2 bg-gray-50 rounded-xl">📊</button>
+                    <div id="cont-l3" class="chart-container">
+                        <canvas id="chart-l3"></canvas>
+                    </div>
                 </div>
             `;
+
+            setTimeout(() => {
+                createReactionTimeChart('chart-l1', 'เกมรหัสสัญลักษณ์', l1FullLogs);
+                createReactionTimeChart('chart-l3', 'Stroop Test', l3FullLogs);
+            }, 100);
         }
     </script>
 </body>
