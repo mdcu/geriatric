@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="top-bar">
+        <div class="app-title">Clinical DB</div>
+        <div class="user-info">
+            <div class="time" id="date-time">Loading...</div>
+            <div class="staff" id="staff-name">Checking Auth...</div>
+        </div>
+    </header>
+
+    <div class="tab-container">
+        <div class="tabs">
+            <button class="tab-button active" data-target="tab-assess">ASSESS</button>
+            <button class="tab-button" data-target="tab-review">REVIEW</button>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <!-- ASSESS TAB -->
+        <div id="tab-assess" class="tab-content">
+            <div id="module-list"></div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <div id="assess-content"></div>
+        </div>
+
+        <!-- REVIEW TAB -->
+        <div id="tab-review" class="tab-content hidden">
+            <p>Review functionality coming soon...</p>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
