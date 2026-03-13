@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบแสดงผลข้อมูลการประเมินสุขภาพผู้สูงอายุ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        .cell-green { background-color: #dcfce7; color: #166534; }
+        .cell-yellow { background-color: #fef9c3; color: #854d0e; }
+        .cell-orange { background-color: #ffedd5; color: #9a3412; }
+        .cell-red { background-color: #fee2e2; color: #991b1b; }
+        details summary::-webkit-details-marker { display:none; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- ส่วนหัวและการเลือกคนไข้ -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">ระบบฐานข้อมูลการประเมินสุขภาพ</h1>
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <label for="patientSelector" class="font-semibold text-gray-700 whitespace-nowrap">เลือกคนไข้:</label>
+                <select id="patientSelector" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                    <option value="">-- กรุณาเลือกคนไข้ --</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- ส่วนแสดงข้อมูล Patient -->
+        <div id="patientInfoSection" class="hidden bg-indigo-700 text-white rounded-xl shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 border-b border-indigo-500 pb-2">ข้อมูลผู้ป่วย (Profile)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div><p class="text-indigo-200 text-sm">ชื่อ-นามสกุล</p><p class="text-lg font-semibold" id="p-name">-</p></div>
+                <div><p class="text-indigo-200 text-sm">เพศ</p><p class="text-lg font-semibold" id="p-sex">-</p></div>
+                <div><p class="text-indigo-200 text-sm">วันเกิด</p><p class="text-lg font-semibold" id="p-dob">-</p></div>
+                <div><p class="text-indigo-200 text-sm">ที่อยู่</p><p class="text-sm" id="p-address">-</p></div>
+            </div>
+        </div>
+
+        <!-- ส่วนเลือกวันที่ประเมิน -->
+        <div id="dateSection" class="hidden bg-white rounded-xl shadow-md p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-700 mb-4">เลือกช่วงเวลาที่ต้องการดูข้อมูล</h2>
+            <div id="checkboxContainer" class="flex flex-wrap gap-3">
+                <!-- Checkboxes will be rendered here -->
+            </div>
+        </div>
+
+        <!-- พื้นที่ Render กลาง -->
+        <div id="renderArea" class="bg-white rounded-xl border-2 border-dashed border-gray-300 p-6 mb-6 transition-all min-h-[200px]">
+            <div id="emptyState" class="py-10 text-center text-gray-400">
+                <svg class="mx-auto h-12 w-12 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <p>ติ๊กที่วันที่ด้านบนเพื่อดึงข้อมูลมาแสดงผล</p>
+            </div>
+            <div id="activeState" class="hidden space-y-6 text-sm">
+                <!-- ข้อมูลจากการ Render จะมาลงที่นี่ -->
+            </div>
+        </div>
+
+        <!-- ส่วนแสดงผล Raw JSON Answers (Collapsible) -->
+        <details id="answersSection" class="hidden mb-12 group">
+            <summary class="flex justify-between items-center cursor-pointer bg-gray-100 p-3 rounded-lg hover:bg-gray-200 transition-all">
+                <span class="text-sm font-mono font-bold text-gray-600 uppercase tracking-wider">🛠️ Technical Data Object (JSON)</span>
+                <span class="text-xs text-blue-600 group-open:hidden">คลิกเพื่อแสดง</span>
+                <span class="text-xs text-blue-600 hidden group-open:inline">คลิกเพื่อซ่อน</span>
+            </summary>
+            <div class="mt-2 bg-gray-900 text-green-400 rounded-xl shadow-lg p-6 overflow-hidden border-t-4 border-green-500">
+                <div class="flex justify-end mb-2">
+                    <button onclick="copyJson()" class="text-[10px] bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded">Copy JSON</button>
+                </div>
+                <div class="overflow-x-auto max-h-96">
+                    <pre id="jsonDisplay" class="font-mono text-xs leading-relaxed"></pre>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <script>
+        // ข้อมูลคนไข้ 3 เคส แบบ Full Data
+        const data = [
+            {
+                "patient": {
+                    "name": ["นางมานี มีสุข"],
+                    "dob": ["1961-05-20"],
+                    "address": ["123/4 หมู่ 5 ต.แจระแม อ.เมือง จ.อุบลราชธานี 34000"],
+                    "sex": ["female"]
+                },
+                "answers": {
+                    "timestamp": ["2026-03-13T10:15:42Z"],
+                    "form-ncd-diseases": [["dm", "ht", "dlp"]],
+                    "form-ncd-diseases-other": [""],
+                    "form-ncd-pims": [["herbs"]],
+                    "drug-alert-none": ["ไม่มีการใช้ยาที่มีความเสี่ยง"],
+                    "drug-alert-fall": [""],
+                    "drug-alert-nsaid": [""],
+                    "drug-alert-blood": [""],
+                    "form-ncd-dm-eye-check": ["not-checked"],
+                    "form-ncd-dm-eye-result": [null],
+                    "form-ncd-dm-eye-symptom": ["normal"],
+                    "form-ncd-dm-eye-alert": ["⚠️ ควรตรวจตาทุกปี เพราะเบาหวานขึ้นตาในระยะแรกอาจไม่มีอาการ"],
+                    "form-ncd-dm-urine-check": ["checked"],
+                    "form-ncd-dm-urine-result": ["no-problem"],
+                    "form-ncd-dm-urine-alert": ["😊 การตรวจปัสสาวะเป็นการคัดกรองเบาหวานลงไต ถ้าปกติก็ดีแล้ว ควรตรวจติดตามทุก 1 ปี"],
+                    "form-ncd-dm-foot-check": ["not-checked"],
+                    "form-ncd-dm-foot-result": [null],
+                    "form-ncd-dm-foot-symptom": ["none"],
+                    "form-ncd-dm-foot-alert": ["⚠️ ให้หมั่นดูแลสุขภาพเท้า พบแพทย์ถ้ามีแผล อย่าตัดตาปลาเอง"],
+                    "form-ncd-sbp1": ["145"],
+                    "form-ncd-dbp1": ["92"],
+                    "form-ncd-hr1": ["78"],
+                    "form-ncd-sbp2": ["142"],
+                    "form-ncd-dbp2": ["90"],
+                    "formncd-hr2": ["76"],
+                    "form-ncd-avg-sbp": ["143.50"],
+                    "form-ncd-avg-dbp": ["91.00"],
+                    "form-ncd-last-hr": ["76"],
+                    "form-ncd-bp-alert": ["⚠️ ความดันยังสูงอยู่ ควรคุมความดันอย่างเคร่งครัด หากคุมแล้วยังไม่ลงแพทย์อาจปรับยาเพิ่ม"],
+                    "form-ncd-hr-alert": ["✅ ชีพจรปกติ"],
+                    "form-ncd-bw": ["58"],
+                    "form-ncd-ht": ["155"],
+                    "form-ncd-wc": ["82"],
+                    "form-ncd-bmi": ["24.14"],
+                    "form-ncd-whr": ["0.53"],
+                    "form-ncd-body-alert": ["⚠️ มีภาวะอ้วนลงพุง (เสี่ยงต่อโรค NCDs) ควรออกกำลังกายและควบคุมอาหารอย่างเคร่งครัด"],
+                    "form-ncd-mod-days": ["3"],
+                    "form-ncd-mod-mins": ["20"],
+                    "form-ncd-vig-days": ["0"],
+                    "form-ncd-vig-mins": [null],
+                    "form-ncd-total-pa": ["60"],
+                    "form-ncd-str-days": ["1"],
+                    "form-ncd-exercise-alert": ["🔴 ควรออกกำลังกายให้มากขึ้นโดย aerobic 150 นาที/สัปดาห์"],
+                    "form-ncd-diet-sweet-1": ["1"], "form-ncd-diet-sweet-2": ["1"], "form-ncd-diet-sweet-3": ["1"], "form-ncd-diet-sweet-4": ["2"],
+                    "form-ncd-score-sweet": ["⚠️ กินหวานเกินไป"],
+                    "form-ncd-diet-fat-1": ["1"], "form-ncd-diet-fat-2": ["1"], "form-ncd-diet-fat-3": ["1"],
+                    "form-ncd-score-fat": ["⚠️ กินมันเกินไป"],
+                    "form-ncd-diet-salt-1": ["1"], "form-ncd-diet-salt-2": ["1"], "form-ncd-diet-salt-3": ["0"], "form-ncd-diet-salt-4": ["1"],
+                    "form-ncd-score-salt": ["⚠️ กินเค็มเกินไป"],
+                    "form-ncd-diet-veg": ["1"], "form-ncd-diet-fruit": ["1"],
+                    "form-ncd-score-vegfruit": ["⚠️ กินผักผลไม้น้อยไป"],
+                    "form-ncd-smoke-status": ["none"],
+                    "form-ncd-smoke-amount": [null],
+                    "form-ncd-alc-status": ["none"],
+                    "form-ncd-alc-days": [null],
+                    "form-ncd-smoke-alc-alert": ["😊 ดีมาก: คุณไม่มีปัจจัยเสี่ยงจากบุหรี่และแอลกอฮอล์"]
+                }
+            },
+            {
+                "patient": {
+                    "name": ["นายมานะ มาอดทน"],
+                    "dob": ["1961-11-10"],
+                    "address": ["456/7 หมู่ 2 ต.บางโฉลง อ.บางพลี จ.สมุทรปราการ 10540"],
+                    "sex": ["male"]
+                },
+                "answers": {
+                    "timestamp": ["2025-09-13T09:00:00Z", "2025-12-13T09:30:00Z", "2026-03-13T08:45:00Z"],
+                    "form-ncd-diseases": [["dm", "ht"], ["dm", "ht"], ["dm", "ht"]],
+                    "form-ncd-diseases-other": ["", "", ""],
+                    "form-ncd-pims": [["nsaid"], ["nsaid"], ["herbs"]],
+                    "drug-alert-nsaid": ["⚠️ การใช้ยาแก้ปวดเป็นประจำอาจทำให้เกิดแผลในกระเพาะอาหาร", "⚠️ การใช้ยาแก้ปวดเป็นประจำอาจทำให้เกิดแผลในกระเพาะอาหาร", ""],
+                    "form-ncd-dm-eye-check": ["not-checked", "not-checked", "checked"],
+                    "form-ncd-dm-eye-result": [null, null, "no-dr"],
+                    "form-ncd-dm-eye-symptom": ["normal", "normal", null],
+                    "form-ncd-dm-eye-alert": ["⚠️ ควรตรวจตาทุกปี", "⚠️ ควรตรวจตาทุกปี", "😊 ดีแล้วควรตรวจติดตามทุก 1 ปี"],
+                    "form-ncd-dm-urine-check": ["not-checked", "checked", "checked"],
+                    "form-ncd-dm-urine-result": [null, "no-problem", "no-problem"],
+                    "form-ncd-dm-urine-alert": ["⚠️ ควรตรวจปัสสาวะทุกปี", "😊 ปกติ ตรวจติดตามทุก 1 ปี", "😊 ปกติ ตรวจติดตามทุก 1 ปี"],
+                    "form-ncd-dm-foot-check": ["not-checked", "not-checked", "checked"],
+                    "form-ncd-dm-foot-result": [null, null, "normal"],
+                    "form-ncd-dm-foot-symptom": ["none", "none", null],
+                    "form-ncd-dm-foot-alert": ["⚠️ ให้หมั่นดูแลสุขภาพเท้า", "⚠️ ให้หมั่นดูแลสุขภาพเท้า", "😊 ดีมาก ครับ ควรหมั่นตรวจเช็กด้วยตนเอง"],
+                    "form-ncd-sbp1": ["168", "154", "138"],
+                    "form-ncd-dbp1": ["102", "94", "88"],
+                    "form-ncd-sbp2": ["164", "152", "136"],
+                    "form-ncd-dbp2": ["100", "92", "86"],
+                    "form-ncd-avg-sbp": ["166.00", "153.00", "137.00"],
+                    "form-ncd-avg-dbp": ["101.00", "93.00", "87.00"],
+                    "form-ncd-bw": ["85", "83", "81"],
+                    "form-ncd-ht": ["170", "170", "170"],
+                    "form-ncd-wc": ["102", "100", "98"],
+                    "form-ncd-bmi": ["29.41", "28.72", "28.03"],
+                    "form-ncd-whr": ["0.60", "0.59", "0.58"],
+                    "form-ncd-mod-days": ["0", "1", "1"],
+                    "form-ncd-mod-mins": [null, "15", "15"],
+                    "form-ncd-total-pa": ["0", "15", "15"],
+                    "form-ncd-diet-sweet-1": ["0", "1", "2"], "form-ncd-diet-sweet-2": ["0", "1", "2"], "form-ncd-diet-sweet-3": ["0", "1", "2"], "form-ncd-diet-sweet-4": ["0", "1", "2"],
+                    "form-ncd-score-sweet": ["⚠️ กินหวานเกินไป", "⚠️ กินหวานเกินไป", "✅ ปกติ"],
+                    "form-ncd-diet-fat-1": ["0", "1", "2"], "form-ncd-diet-fat-2": ["0", "1", "2"], "form-ncd-diet-fat-3": ["0", "1", "2"],
+                    "form-ncd-score-fat": ["⚠️ กินมันเกินไป", "⚠️ กินมันเกินไป", "✅ ปกติ"],
+                    "form-ncd-diet-salt-1": ["0", "1", "2"], "form-ncd-diet-salt-2": ["0", "1", "2"], "form-ncd-diet-salt-3": ["0", "1", "2"], "form-ncd-diet-salt-4": ["0", "1", "2"],
+                    "form-ncd-score-salt": ["⚠️ กินเค็มเกินไป", "⚠️ กินเค็มเกินไป", "✅ ปกติ"],
+                    "form-ncd-diet-veg": ["0", "1", "2"], "form-ncd-diet-fruit": ["0", "1", "1"],
+                    "form-ncd-score-vegfruit": ["⚠️ กินผักผลไม้น้อยไป", "⚠️ กินผักผลไม้น้อยไป", "✅ ปกติ"],
+                    "form-ncd-smoke-status": ["none", "none", "none"],
+                    "form-ncd-alc-status": ["none", "none", "none"],
+                    "form-ncd-smoke-alc-alert": ["😊 ดีมาก", "😊 ดีมาก", "😊 ดีมาก"]
+                }
+            },
+            {
+                "patient": {
+                    "name": ["นางสาวปราณี มีทุกข์"],
+                    "dob": ["1961-07-25"],
+                    "address": ["789 ซอยวิภาวดี 20 แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900"],
+                    "sex": ["female"]
+                },
+                "answers": {
+                    "timestamp": ["2025-10-05T14:20:00Z", "2026-03-13T11:10:00Z"],
+                    "form-ncd-diseases": [["ht"], ["ht"]],
+                    "form-ncd-pims": [["nsaid"], ["nsaid", "herbs"]],
+                    "drug-alert-nsaid": ["⚠️ พบการใช้ยาแก้ปวด NSAIDs", "⚠️ พบการใช้ยาแก้ปวด NSAIDs"],
+                    "form-ncd-sbp1": ["152", "174"],
+                    "form-ncd-dbp1": ["94", "106"],
+                    "form-ncd-sbp2": ["148", "170"],
+                    "form-ncd-dbp2": ["90", "104"],
+                    "form-ncd-avg-sbp": ["150.00", "172.00"],
+                    "form-ncd-avg-dbp": ["92.00", "105.00"],
+                    "form-ncd-last-hr": ["74", "82"],
+                    "form-ncd-bp-alert": ["⚠️ ความดันยังสูงอยู่", "🟠 ความดันสูงมาก"],
+                    "form-ncd-hr-alert": ["✅ ชีพจรปกติ", "✅ ชีพจรปกติ"],
+                    "form-ncd-bw": ["48", "53"],
+                    "form-ncd-ht": ["158", "158"],
+                    "form-ncd-wc": ["72", "80"],
+                    "form-ncd-bmi": ["19.23", "21.23"],
+                    "form-ncd-whr": ["0.46", "0.51"],
+                    "form-ncd-body-alert": ["✅ น้ำหนักตัวเหมาะสม", "⚠️ มีภาวะอ้วนลงพุง (เสี่ยงต่อโรค NCDs)"],
+                    "form-ncd-mod-days": ["2", "0"],
+                    "form-ncd-total-pa": ["40", "0"],
+                    "form-ncd-diet-sweet-1": ["1", "0"], "form-ncd-diet-sweet-2": ["1", "0"], "form-ncd-diet-sweet-3": ["1", "0"], "form-ncd-diet-sweet-4": ["1", "0"],
+                    "form-ncd-score-sweet": ["⚠️ กินหวานเกินไป", "⚠️ กินหวานเกินไป"],
+                    "form-ncd-diet-fat-1": ["1", "0"], "form-ncd-diet-fat-2": ["1", "0"], "form-ncd-diet-fat-3": ["1", "0"],
+                    "form-ncd-score-fat": ["⚠️ กินมันเกินไป", "⚠️ กินมันเกินไป"],
+                    "form-ncd-diet-salt-1": ["1", "0"], "form-ncd-diet-salt-2": ["1", "0"], "form-ncd-diet-salt-3": ["1", "0"], "form-ncd-diet-salt-4": ["1", "0"],
+                    "form-ncd-score-salt": ["⚠️ กินเค็มเกินไป", "⚠️ กินเค็มเกินไป"],
+                    "form-ncd-diet-veg": ["1", "0"], "form-ncd-diet-fruit": ["1", "0"],
+                    "form-ncd-score-vegfruit": ["⚠️ กินผักผลไม้น้อยไป", "⚠️ กินผักผลไม้น้อยไป"],
+                    "form-ncd-smoke-status": ["none", "none"],
+                    "form-ncd-alc-status": ["none", "none"],
+                    "form-ncd-smoke-alc-alert": ["😊 ดีมาก", "😊 ดีมาก"]
+                }
+            }
+        ];
+
+        const selector = document.getElementById('patientSelector');
+        const patientInfo = document.getElementById('patientInfoSection');
+        const dateSection = document.getElementById('dateSection');
+        const checkboxContainer = document.getElementById('checkboxContainer');
+        const answersSection = document.getElementById('answersSection');
+        const jsonDisplay = document.getElementById('jsonDisplay');
+        const emptyState = document.getElementById('emptyState');
+        const activeState = document.getElementById('activeState');
+
+        data.forEach((item, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = item.patient.name[0];
+            selector.appendChild(option);
+        });
+
+        selector.addEventListener('change', (e) => {
+            const index = e.target.value;
+            if (index === "") { hideAll(); return; }
+            const person = data[index];
+            renderPatientInfo(person.patient);
+            renderDateCheckboxes(person.answers.timestamp);
+            // Default: ประมวลผลทันทีเพราะ checkbox ถูกติ๊กทั้งหมดแล้ว
+            updateJsonDisplay(index);
+        });
+
+        function renderPatientInfo(p) {
+            document.getElementById('p-name').textContent = p.name[0];
+            document.getElementById('p-sex').textContent = p.sex[0] === 'male' ? 'ชาย' : 'หญิง';
+            document.getElementById('p-dob').textContent = p.dob[0];
+            document.getElementById('p-address').textContent = p.address[0];
+            patientInfo.classList.remove('hidden');
+        }
+
+        function renderDateCheckboxes(timestamps) {
+            checkboxContainer.innerHTML = '';
+            timestamps.forEach((ts, i) => {
+                const dateObj = new Date(ts);
+                const dateStr = dateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+                const label = document.createElement('label');
+                label.className = "flex items-center space-x-2 bg-gray-100 p-3 rounded-lg cursor-pointer hover:bg-gray-200 transition-all border border-gray-200";
+                // เพิ่ม 'checked' เพื่อให้ default ติ๊กทุกเวลา
+                label.innerHTML = `<input type="checkbox" value="${i}" class="date-checkbox w-5 h-5 text-indigo-600 rounded" checked><span class="text-gray-700 font-medium">${dateStr}</span>`;
+                checkboxContainer.appendChild(label);
+            });
+            document.querySelectorAll('.date-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => updateJsonDisplay(selector.value));
+            });
+            dateSection.classList.remove('hidden');
+        }
+
+        function updateJsonDisplay(patientIndex) {
+            const selectedIndices = Array.from(document.querySelectorAll('.date-checkbox:checked')).map(cb => parseInt(cb.value));
+            if (selectedIndices.length === 0) { answersSection.classList.add('hidden'); emptyState.classList.remove('hidden'); activeState.classList.add('hidden'); return; }
+            const fullAnswers = data[patientIndex].answers;
+            const filteredAnswers = {};
+            Object.keys(fullAnswers).forEach(qcode => { filteredAnswers[qcode] = selectedIndices.map(i => fullAnswers[qcode][i]); });
+            jsonDisplay.textContent = JSON.stringify(filteredAnswers, null, 2);
+            answersSection.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            activeState.classList.remove('hidden');
+            main_render(filteredAnswers);
+        }
+
+        // --- Render Functions Area ---
+
+        function main_render(filteredAnswers) {
+            activeState.innerHTML = '<h3 class="text-xl font-bold mb-4 text-blue-600 border-b pb-2">📊 ผลการวิเคราะห์ข้อมูลสุขภาพ</h3>';
+            activeState.appendChild(history_render(filteredAnswers));
+            activeState.appendChild(dm_complication_render(filteredAnswers));
+            activeState.appendChild(vitals_body_render(filteredAnswers));
+            activeState.appendChild(physicalactivity_render(filteredAnswers));
+            activeState.appendChild(diet_render(filteredAnswers));
+            activeState.appendChild(alcoholsmoke_render(filteredAnswers));
+        }
+
+        function history_render(filteredAnswers) {
+            const div = document.createElement('div');
+            div.className = "bg-white p-5 rounded-lg border border-gray-200 shadow-sm space-y-4";
+            const diseaseMap = { 'ht': 'ความดันโลหิตสูง', 'dm': 'เบาหวาน', 'dlp': 'ไขมันในเลือดสูง', 'heart': 'โรคหัวใจ', 'stroke': 'โรคหลอดเลือดสมอง', 'kidney': 'โรคไต', 'oa-knee': 'ข้อเข่าเสื่อม' };
+            const pimsList = [ { label: 'ยานอนหลับ', value: 'sleep-pill' }, { label: 'ยาแก้แพ้แบบง่วง', value: 'cpm-like' }, { label: 'ยาแก้เวียนหัวแบบง่วง', value: 'dimen-like' }, { label: 'ยาแก้ปวดที่กัดกระเพาะ', value: 'nsaid' }, { label: 'ยาคลายกล้ามเนื้อ', value: 'muscle-relaxant' }, { label: 'ยาละลายลิ่มเลือด', value: 'blood-thinner' }, { label: 'สมุนไพรอาหารเสริม', value: 'herbs' } ];
+            const lastDiseases = (filteredAnswers['form-ncd-diseases'] || []).at(-1) || [];
+            const lastOther = (filteredAnswers['form-ncd-diseases-other'] || []).at(-1) || "";
+            let diseaseContent = `<div class="mb-4"><h4 class="font-bold text-gray-700 mb-2">🏥 โรคประจำตัว</h4><div class="flex flex-wrap gap-2">`;
+            if (lastDiseases.length > 0) { lastDiseases.forEach(d => { if (diseaseMap[d]) diseaseContent += `<span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-blue-200">${diseaseMap[d]}</span>`; }); }
+            if (lastOther) diseaseContent += `<span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-gray-200">${lastOther}</span>`;
+            diseaseContent += `</div></div>`;
+            const timestamps = filteredAnswers['timestamp'] || [];
+            const pimsHistory = filteredAnswers['form-ncd-pims'] || [];
+            let tableContent = `<div class="mb-4"><h4 class="font-bold text-gray-700 mb-2">💊 ตารางการใช้ยาที่มีความเสี่ยง (PIMS)</h4><div class="overflow-x-auto border rounded-lg text-[13px]"><table class="min-w-full text-left"><thead class="bg-gray-50 border-b text-gray-600"><tr><th class="px-3 py-2 font-semibold border-r">รายการยา</th>`;
+            timestamps.forEach(ts => { const d = new Date(ts).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }); tableContent += `<th class="px-3 py-2 font-semibold text-center">${d}</th>`; });
+            tableContent += `</tr></thead><tbody class="divide-y">`;
+            pimsList.forEach(pims => { tableContent += `<tr><td class="px-3 py-1.5 font-medium text-gray-700 border-r bg-gray-50/50">${pims.label}</td>`; pimsHistory.forEach(assessmentPims => { const hasDrug = (assessmentPims || []).includes(pims.value); tableContent += `<td class="px-3 py-1.5 text-center font-bold">${hasDrug ? '<span class="text-red-600">❌</span>' : '<span class="text-gray-200">-</span>'}</td>`; }); tableContent += `</tr>`; });
+            tableContent += `</tbody></table></div></div>`;
+            const lastAlertNsaid = (filteredAnswers['drug-alert-nsaid'] || []).at(-1) || "";
+            const lastAlertNone = (filteredAnswers['drug-alert-none'] || []).at(-1) || "";
+            let alertContent = `<div class="bg-yellow-50 p-3 rounded border border-yellow-100 text-sm"><h5 class="font-bold text-yellow-800 mb-1">📢 ข้อแนะนำเรื่องการใช้ยา (ล่าสุด)</h5>`;
+            if (lastAlertNsaid) alertContent += `<p class="text-yellow-900"><li>${lastAlertNsaid}</li></p>`; else if (lastAlertNone) alertContent += `<p class="text-green-700 font-medium italic">✅ ${lastAlertNone}</p>`;
+            alertContent += `</div>`;
+            div.innerHTML = `<h4 class="text-lg font-bold text-gray-800 border-l-4 border-red-500 pl-2 mb-4">ส่วนที่ 1: โรคประจำตัวและยา</h4>` + diseaseContent + tableContent + alertContent;
+            return div;
+        }
+
+        function dm_complication_render(filteredAnswers) {
+            const div = document.createElement('div');
+            div.className = "bg-white p-5 rounded-lg border border-gray-200 shadow-sm space-y-3";
+            const eyeCheck = filteredAnswers['form-ncd-dm-eye-check'] || [];
+            let latestIdx = -1;
+            for(let i = eyeCheck.length - 1; i >= 0; i--) { if (eyeCheck[i] !== null) { latestIdx = i; break; } }
+            if (latestIdx === -1) return div;
+            const ts = filteredAnswers['timestamp'][latestIdx];
+            const dateObj = new Date(ts);
+            const today = new Date("2026-03-13T00:00:00Z");
+            const diffMonths = (today.getFullYear() - dateObj.getFullYear()) * 12 + (today.getMonth() - dateObj.getMonth());
+            const dateStr = dateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+            const timeAgo = diffMonths === 0 ? "เดือนนี้" : `${diffMonths} เดือนที่แล้ว`;
+            let content = `<h4 class="text-lg font-bold text-gray-800 border-l-4 border-blue-500 pl-2 mb-4">ส่วนที่ 2: การติดตามภาวะแทรกซ้อนเบาหวาน</h4><p class="text-sm text-gray-600 mb-4 bg-blue-50 p-2 rounded">จากการซักประวัติล่าสุดเมื่อวันที่ <b>${dateStr}</b> (${timeAgo}) มีรายละเอียดดังนี้:</p><ul class="space-y-3 text-[15px] list-none">`;
+            const eCheck = filteredAnswers['form-ncd-dm-eye-check'][latestIdx];
+            const eRes = filteredAnswers['form-ncd-dm-eye-result'][latestIdx];
+            const eSym = filteredAnswers['form-ncd-dm-eye-symptom'][latestIdx];
+            let eyeTxt = eCheck === 'checked' ? `✔️ <b>ได้รับการตรวจตาในปีที่ผ่านมาแล้ว</b> โดยผลตรวจล่าสุด${eRes === 'has-dr' ? 'พบภาวะเบาหวานขึ้นจอตา' : 'ปกติ'}` : `❌ <b>ยังไม่ได้ตรวจตาในปีที่ผ่านมา</b> และ${eSym === 'blurry' ? 'เริ่มมีอาการตามัวมองไม่ชัด <span class="text-red-600 font-bold">ควรรีบพบจักษุแพทย์ทันที</span>' : 'แม้ยังไม่มีอาการผิดปกติแต่ควรตรวจคัดกรองประจำปี'}`;
+            content += `<li>${eyeTxt}</li>`;
+            const uCheck = filteredAnswers['form-ncd-dm-urine-check'][latestIdx];
+            const uRes = filteredAnswers['form-ncd-dm-urine-result'][latestIdx];
+            let urineTxt = uCheck === 'checked' ? `✔️ <b>ได้รับการตรวจปัสสาวะคัดกรองไตแล้ว</b> ${uRes === 'problem' ? 'พบความเสี่ยงไตเสื่อมหรือโปรตีนรั่ว' : 'ผลปกติ'}` : `❌ <b>ยังไม่ได้ตรวจปัสสาวะคัดกรองเบาหวานลงไต</b> แนะนำให้ตรวจในการนัดครั้งถัดไป`;
+            content += `<li>${urineTxt}</li>`;
+            const fCheck = filteredAnswers['form-ncd-dm-foot-check'][latestIdx];
+            const fSym = filteredAnswers['form-ncd-dm-foot-symptom'][latestIdx];
+            let footTxt = fCheck === 'checked' ? `✔️ <b>ได้รับการตรวจเท้าโดยบุคลากรทางการแพทย์แล้ว</b>` : `❌ <b>ยังไม่ได้ตรวจเท้าโดยเจ้าหน้าที่</b> และ${fSym === 'has-symptom' ? 'พบอาการชาหรือแผลเรื้อรังที่เท้า <span class="text-red-600 font-bold">ต้องรีบพบแพทย์เพื่อป้องกันการติดเชื้อ</span>' : 'แม้ไม่มีอาการชาหรือแผล แต่ควรหมั่นตรวจเช็กเท้าตนเองทุกวัน'}`;
+            content += `<li>${footTxt}</li></ul>`;
+            div.innerHTML = content;
+            return div;
+        }
+
+        function getBPColor(sbp, dbp) {
+            const s = parseFloat(sbp); const d = parseFloat(dbp);
+            if (s >= 180 || d >= 110) return 'cell-red';
+            if (s >= 160 || d >= 100) return 'cell-orange';
+            if (s >= 140 || d >= 90) return 'cell-yellow';
+            return 'cell-green';
+        }
+        function getHRColor(hr) { const h = parseFloat(hr); return (h < 50 || h > 100) ? 'cell-orange' : 'cell-green'; }
+        function getBMIColor(bmi) {
+            const b = parseFloat(bmi);
+            if (b < 18.5) return 'cell-orange'; if (b < 19) return 'cell-yellow';
+            if (b <= 23.5) return 'cell-green'; if (b <= 25) return 'cell-yellow';
+            return 'cell-orange';
+        }
+        function getWHRColor(whr) { return parseFloat(whr) > 0.5 ? 'cell-yellow' : 'cell-green'; }
+        function getTrendText(cur, prev, label) {
+            let status = label === "ความดันโลหิต" ? (cur >= 140 ? "สูง" : "ปกติ") : (cur > 23.5 ? "เกินเกณฑ์" : cur < 18.5 ? "ต่ำกว่าเกณฑ์" : "ปกติ");
+            if (isNaN(prev)) return `${label}อยู่ในเกณฑ์ ${status}`;
+            let trend = cur > prev ? "แต่มีแนวโน้มเพิ่มขึ้น" : cur < prev ? "แต่มีแนวโน้มลดลง" : "และคงที่";
+            if (status === "สูง" && cur > prev) return `${label}อยู่ในเกณฑ์ สูง และแย่ลงกว่าครั้งที่แล้ว`;
+            if (status === "สูง" && cur < prev) return `${label}อยู่ในเกณฑ์ สูง แต่มีแนวโน้มดีขึ้น (ลดลง)`;
+            return `${label}อยู่ในเกณฑ์ ${status} ${trend}`;
+        }
+
+        function vitals_body_render(filteredAnswers) {
+            const div = document.createElement('div');
+            div.className = "bg-white p-5 rounded-lg border border-gray-200 shadow-sm space-y-4";
+            const timestamps = filteredAnswers['timestamp'] || [];
+            const sbp = filteredAnswers['form-ncd-avg-sbp'] || [];
+            const dbp = filteredAnswers['form-ncd-avg-dbp'] || [];
+            const hr = filteredAnswers['form-ncd-last-hr'] || [];
+            const bw = filteredAnswers['form-ncd-bw'] || [];
+            const ht = filteredAnswers['form-ncd-ht'] || [];
+            const bmi = filteredAnswers['form-ncd-bmi'] || [];
+            const wc = filteredAnswers['form-ncd-wc'] || [];
+            const whr = filteredAnswers['form-ncd-whr'] || [];
+            if (timestamps.length === 0) return div;
+            let tableHTML = `<div class="overflow-x-auto border rounded-lg"><table class="min-w-full text-center text-xs"><thead class="bg-gray-100 border-b"><tr><th class="px-2 py-3 text-left font-bold border-r w-32">ตัวชี้วัด / วันที่</th>`;
+            timestamps.forEach(ts => { const d = new Date(ts).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }); tableHTML += `<th class="px-2 py-3 font-bold">${d}</th>`; });
+            tableHTML += `</tr></thead><tbody class="divide-y">`;
+            const rows = [
+                { label: 'SBP เฉลี่ย', data: sbp, colorFn: (val, i) => getBPColor(sbp[i], dbp[i]) },
+                { label: 'DBP เฉลี่ย', data: dbp, colorFn: (val, i) => getBPColor(sbp[i], dbp[i]) },
+                { label: 'ชีพจร (HR)', data: hr, colorFn: (val) => getHRColor(val) },
+                { label: 'น้ำหนัก (BW)', data: bw, isDelta: true },
+                { label: 'ส่วนสูง (HT)', data: ht },
+                { label: 'BMI', data: bmi, colorFn: (val) => getBMIColor(val) },
+                { label: 'รอบเอว (WC)', data: wc, isDelta: true },
+                { label: 'เอว/สูง (WHR)', data: whr, colorFn: (val) => getWHRColor(val) }
+            ];
+            rows.forEach(row => {
+                tableHTML += `<tr><td class="px-2 py-2 text-left font-semibold bg-gray-50 border-r">${row.label}</td>`;
+                row.data.forEach((val, i) => {
+                    let displayVal = val || '-';
+                    if (row.isDelta && i > 0 && val && row.data[i-1]) {
+                        const diff = (parseFloat(val) - parseFloat(row.data[i-1])).toFixed(1);
+                        displayVal += ` <span class="text-[10px] font-normal">(${diff > 0 ? '+' : ''}${diff})</span>`;
+                    }
+                    tableHTML += `<td class="px-2 py-2 font-bold ${row.colorFn ? row.colorFn(val, i) : ''}">${displayVal}</td>`;
+                });
+                tableHTML += `</tr>`;
+            });
+            tableHTML += `</tbody></table></div>`;
+            const lastIdx = timestamps.length - 1;
+            const prevIdx = lastIdx - 1;
+            let summaryHTML = `<div class="bg-blue-50 p-3 rounded border border-blue-100 text-[13px] text-blue-900 mt-4"><h5 class="font-bold mb-2 underline">📝 สรุปแนวโน้มสุขภาพล่าสุด</h5><ul class="list-disc list-inside space-y-1">`;
+            if (lastIdx >= 0) {
+                summaryHTML += `<li>${getTrendText(sbp[lastIdx], sbp[prevIdx], "ความดันโลหิต")}</li>`;
+                summaryHTML += `<li>${getTrendText(bmi[lastIdx], bmi[prevIdx], "BMI")}</li>`;
+                if (lastIdx > 0) { const bwDiff = parseFloat(bw[lastIdx]) - parseFloat(bw[prevIdx]); if (Math.abs(bwDiff) > 0.1) summaryHTML += `<li>น้ำหนักตัวมีการเปลี่ยนแปลง ${bwDiff > 0 ? 'เพิ่มขึ้น' : 'ลดลง'} ${Math.abs(bwDiff).toFixed(1)} กก.</li>`; }
+            }
+            summaryHTML += `</ul></div>`;
+            div.innerHTML = `<h4 class="text-lg font-bold text-gray-800 border-l-4 border-green-500 pl-2 mb-4">ส่วนที่ 3: สัญญาณชีพและสัดส่วนร่างกาย</h4>` + tableHTML + summaryHTML;
+            return div;
+        }
+
+        function physicalactivity_render(filteredAnswers) {
+            const div = document.createElement('div');
+            div.className = "bg-white p-5 rounded-lg border border-gray-200 shadow-sm";
+            const timestamps = filteredAnswers['timestamp'] || [];
+            const modD = filteredAnswers['form-ncd-mod-days'] || [];
+            const modM = filteredAnswers['form-ncd-mod-mins'] || [];
+            const total = filteredAnswers['form-ncd-total-pa'] || [];
+            const resD = filteredAnswers['form-ncd-str-days'] || [];
+            const alert = filteredAnswers['form-ncd-exercise-alert'] || [];
+            let tableHTML = `<div class="overflow-x-auto border rounded-lg mb-4"><table class="min-w-full text-center text-xs"><thead class="bg-gray-100 border-b"><tr><th class="px-2 py-3 text-left font-bold border-r w-32">พฤติกรรมออกกำลังกาย</th>`;
+            timestamps.forEach(ts => { const d = new Date(ts).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }); tableHTML += `<th class="px-2 py-3 font-bold">${d}</th>`; });
+            tableHTML += `</tr></thead><tbody class="divide-y">`;
+            const rows = [
+                { label: 'แอโรบิก (วัน/สัปดาห์)', data: modD },
+                { label: 'เฉลี่ย (นาที/วัน)', data: modM },
+                { label: 'เวลารวมเทียบปานกลาง', data: total, colorFn: (v) => parseFloat(v) >= 150 ? 'cell-green' : 'cell-yellow' },
+                { label: 'แรงต้าน (วัน/สัปดาห์)', data: resD, colorFn: (v) => parseFloat(v) >= 3 ? 'cell-green' : 'cell-yellow' }
+            ];
+            rows.forEach(row => {
+                tableHTML += `<tr><td class="px-2 py-2 text-left font-semibold bg-gray-50 border-r">${row.label}</td>`;
+                row.data.forEach(val => { tableHTML += `<td class="px-2 py-2 font-bold ${row.colorFn ? row.colorFn(val) : ''}">${val || '0'}</td>`; });
+                tableHTML += `</tr>`;
+            });
+            tableHTML += `</tbody></table></div>`;
+            const lastAlert = alert.at(-1) || "ไม่พบข้อมูลสรุป";
+            div.innerHTML = `<h4 class="text-lg font-bold text-gray-800 border-l-4 border-indigo-500 pl-2 mb-4">ส่วนที่ 4: กิจกรรมทางกาย</h4>` + tableHTML + `<p class="bg-indigo-50 p-2 rounded border border-indigo-100 text-indigo-900"><b>ล่าสุด:</b> ${lastAlert}</p>`;
+            return div;
+        }
+
+        function diet_render(filteredAnswers) {
+            const div = document.createElement('div');
+            div.className = "bg-white p-5 rounded-lg border border-gray-200 shadow-sm space-y-4";
+            const timestamps = filteredAnswers['timestamp'] || [];
+            const questions = [
+                { label: '1. ดื่มเครื่องดื่มรสหวาน', key: 'form-ncd-diet-sweet-1' },
+                { label: '2. กินขนมหวาน', key: 'form-ncd-diet-sweet-2' },
+                { label: '3. เติมน้ำตาลในอาหาร', key: 'form-ncd-diet-sweet-3' },
+                { label: '4. ผลไม้หวานจัด/แปรรูป', key: 'form-ncd-diet-sweet-4' },
+                { label: '5. เนื้อสัตว์ติดมัน', key: 'form-ncd-diet-fat-1' },
+                { label: '6. ของทอด/กะทิ', key: 'form-ncd-diet-fat-2' },
+                { label: '7. อาหารไขมันสูง', key: 'form-ncd-diet-fat-3' },
+                { label: '8. เนื้อแปรรูป/หมักดอง', key: 'form-ncd-diet-salt-1' },
+                { label: '9. อาหารสำเร็จรูป/กระป๋อง', key: 'form-ncd-diet-salt-2' },
+                { label: '10. ซดน้ำซุป/แกง', key: 'form-ncd-diet-salt-3' },
+                { label: '11. เติมเครื่องปรุงเพิ่ม', key: 'form-ncd-diet-salt-4' },
+                { label: '12. กินผักครึ่งมื้อ', key: 'form-ncd-diet-veg', reverse: true },
+                { label: '13. กินผลไม้สด', key: 'form-ncd-diet-fruit', reverse: true }
+            ];
+            let tableHTML = `<div class="overflow-x-auto border rounded-lg"><table class="min-w-full text-center text-[11px]"><thead class="bg-gray-100 border-b"><tr><th class="px-2 py-3 text-left font-bold border-r w-40">รายการอาหาร / ความถี่</th>`;
+            timestamps.forEach(ts => { const d = new Date(ts).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }); tableHTML += `<th class="px-2 py-3 font-bold">${d}</th>`; });
+            tableHTML += `</tr></thead><tbody class="divide-y">`;
+            questions.forEach(q => {
+                const rowData = filteredAnswers[q.key] || [];
+                tableHTML += `<tr><td class="px-2 py-1.5 text-left font-medium bg-gray-50 border-r">${q.label}</td>`;
+                rowData.forEach(val => {
+                    let colorClass = ""; const v = parseInt(val);
+                    if (!q.reverse) { colorClass = v === 0 ? 'cell-red' : v === 1 ? 'cell-yellow' : 'cell-green'; }
+                    else { colorClass = v === 2 ? 'cell-green' : v === 1 ? 'cell-yellow' : 'cell-red'; }
+                    tableHTML += `<td class="px-2 py-1.5 font-bold ${colorClass}">${val}</td>`;
+                });
+                tableHTML += `</tr>`;
+            });
+            tableHTML += `</tbody></table></div>`;
+            const lastSweet = filteredAnswers['form-ncd-score-sweet']?.at(-1) || "";
+            const lastFat = filteredAnswers['form-ncd-score-fat']?.at(-1) || "";
+            const lastSalt = filteredAnswers['form-ncd-score-salt']?.at(-1) || "";
+            const lastVeg = filteredAnswers['form-ncd-score-vegfruit']?.at(-1) || "";
+            let summaryHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[13px]"><div class="p-2 bg-pink-50 rounded border border-pink-100"><b>🍬 รสหวาน:</b> ${lastSweet}</div><div class="p-2 bg-yellow-50 rounded border border-yellow-100"><b>🥓 ไขมัน:</b> ${lastFat}</div><div class="p-2 bg-blue-50 rounded border border-blue-100"><b>🧂 รสเค็ม:</b> ${lastSalt}</div><div class="p-2 bg-green-50 rounded border border-green-100"><b>🥗 ผักผลไม้:</b> ${lastVeg}</div></div>`;
+            div.innerHTML = `<h4 class="text-lg font-bold text-gray-800 border-l-4 border-orange-500 pl-2 mb-4">ส่วนที่ 5: พฤติกรรมการบริโภค</h4>` + tableHTML + summaryHTML;
+            return div;
+        }
+
+        function alcoholsmoke_render(filteredAnswers) {
+            const div = document.createElement('div');
+            div.className = "bg-white p-5 rounded-lg border border-gray-200 shadow-sm";
+            const timestamps = filteredAnswers['timestamp'] || [];
+            const smoke = filteredAnswers['form-ncd-smoke-status'] || [];
+            const alc = filteredAnswers['form-ncd-alc-status'] || [];
+            const alert = filteredAnswers['form-ncd-smoke-alc-alert'] || [];
+            let content = `<h4 class="text-lg font-bold text-gray-800 border-l-4 border-gray-500 pl-2 mb-4">ส่วนที่ 6: สารเสพติดและแอลกอฮอล์</h4><div class="flex flex-wrap gap-4 text-xs">`;
+            timestamps.forEach((ts, i) => {
+                const s = smoke[i] === 'active' ? '🔴 สูบ' : '✅ ไม่สูบ';
+                const a = alc[i] === 'active' ? '🔴 ดื่ม' : '✅ ไม่ดื่ม';
+                content += `<div class="bg-gray-50 p-2 rounded border border-gray-200 min-w-[100px] text-center"><p class="font-bold mb-1">${new Date(ts).toLocaleDateString('th-TH', {day:'2-digit', month:'2-digit'})}</p><p>${s}</p><p>${a}</p></div>`;
+            });
+            content += `</div><p class="mt-4 p-2 bg-gray-100 rounded text-[13px]"><b>ข้อแนะนำล่าสุด:</b> ${alert.at(-1) || '-'}</p>`;
+            div.innerHTML = content;
+            return div;
+        }
+
+        function hideAll() {
+            patientInfo.classList.add('hidden');
+            dateSection.classList.add('hidden');
+            answersSection.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            activeState.classList.add('hidden');
+        }
+
+        function copyJson() {
+            const text = jsonDisplay.textContent;
+            const temp = document.createElement('textarea');
+            document.body.appendChild(temp);
+            temp.value = text;
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+        }
+    </script>
+</body>
+</html>
