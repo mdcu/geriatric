@@ -336,7 +336,7 @@
             let tableContent = `<div class="mb-4"><h4 class="font-bold text-gray-700 mb-2">💊 ตารางการใช้ยาที่มีความเสี่ยง (PIMS)</h4><div class="overflow-x-auto border rounded-lg text-[13px]"><table class="min-w-full text-left"><thead class="bg-gray-50 border-b text-gray-600"><tr><th class="px-3 py-2 font-semibold border-r">รายการยา</th>`;
             timestamps.forEach(ts => { const d = new Date(ts).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }); tableContent += `<th class="px-3 py-2 font-semibold text-center">${d}</th>`; });
             tableContent += `</tr></thead><tbody class="divide-y">`;
-            pimsList.forEach(pims => { tableContent += `<tr><td class="px-3 py-1.5 font-medium text-gray-700 border-r bg-gray-50/50">${pims.label}</td>`; pimsHistory.forEach(assessmentPims => { const hasDrug = (assessmentPims || []).includes(pims.value); tableContent += `<td class="px-3 py-1.5 text-center font-bold">${hasDrug ? '<span class="text-red-600">❌</span>' : '<span class="text-gray-200">-</span>'}</td>`; }); tableContent += `</tr>`; });
+            pimsList.forEach(pims => { tableContent += `<tr><td class="px-3 py-1.5 font-medium text-gray-700 border-r bg-gray-50/50">${pims.label}</td>`; pimsHistory.forEach(assessmentPims => { const hasDrug = (assessmentPims || []).includes(pims.value); tableContent += `<td class="px-3 py-1.5 text-center font-bold">${hasDrug ? '<span class="text-red-600">⚠️</span>' : '<span class="text-gray-200">-</span>'}</td>`; }); tableContent += `</tr>`; });
             tableContent += `</tbody></table></div></div>`;
             const lastAlertNsaid = (filteredAnswers['drug-alert-nsaid'] || []).at(-1) || "";
             const lastAlertNone = (filteredAnswers['drug-alert-none'] || []).at(-1) || "";
