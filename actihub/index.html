@@ -1,13 +1,901 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบลงทะเบียนกิจกรรมผู้สูงอายุ</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
 
+    <!-- Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c51a1', 
+                            700: '#6b4090',
+                            800: '#5b347a',
+                            900: '#4c2b66',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Itim', cursive !important;
+            border-color: #0f172a;
+        }
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+            font-size: 14px;
+        }
+
+        .bento-card {
+            background-color: white;
+            border-width: 4px;
+            border-color: #0f172a;
+            border-radius: 1.5rem;
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 200ms;
+            box-shadow: 4px 4px 0px 0px #0f172a;
+        }
+
+        .btn-bento {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #7c51a1;
+            color: white;
+            border-width: 4px;
+            border-color: #0f172a;
+            border-radius: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition-all: 200ms;
+            box-shadow: 4px 4px 0px 0px #0f172a;
+        }
+
+        .btn-bento:hover {
+            background-color: #6b4090;
+            box-shadow: 6px 6px 0px 0px #0f172a;
+            transform: translate(-0.125rem, -0.125rem);
+        }
+
+        .btn-bento:active {
+            transform: scale(0.95);
+        }
+
+        .btn-bento:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-bento-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background-color: white;
+            color: #0f172a;
+            border-width: 4px;
+            border-color: #0f172a;
+            border-radius: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition-all: 200ms;
+            box-shadow: 4px 4px 0px 0px #0f172a;
+        }
+
+        .btn-bento-outline:hover {
+            background-color: #f8fafc;
+            box-shadow: 6px 6px 0px 0px #0f172a;
+            transform: translate(-0.125rem, -0.125rem);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-width: 2px;
+            border-color: #0f172a;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            line-height: 1;
+        }
+
+        .input-bento {
+            width: 100%;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            border-width: 2px;
+            border-color: #0f172a;
+            font-weight: 700;
+            outline: none;
+        }
+
+        .input-bento:focus {
+            box-shadow: 0 0 0 4px #f3e8ff;
+        }
+
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-slide-up {
+            animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0f172a;
+            border-radius: 10px;
+            border: 3px solid #f1f5f9;
+        }
+    </style>
+
+    <!-- Scripts via CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2" crossorigin></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- Configuration ---
+        const SUPABASE_URL = 'https://vpulqdqahnzgqkogiqpm.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdWxxZHFhaG56Z3Frb2dpcXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTgzOTUsImV4cCI6MjA4NTI3NDM5NX0.7fRZ0C7CwYnciKcFUTJ0o8tkwkgtNH-3vhQ_fFF2hWA';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- Utilities ---
+        const cn = (...classes) => classes.filter(Boolean).join(' ');
+
+        const formatDate = (date) => {
+            if (!date) return '';
+            return new Date(date).toLocaleDateString('th-TH', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            });
+        };
+
+        const maskThaiName = (fullName) => {
+            if (!fullName) return '';
+            const trimmed = fullName.trim();
+            const parts = trimmed.split(/\s+/);
+            let base = trimmed;
+            if (parts.length > 1) {
+                base = parts.slice(0, -1).join(' ').trim();
+            }
+            if (base.length <= 3) return '***';
+            return base.substring(0, base.length - 3) + '***';
+        };
+
+        // --- Icons Component ---
+        const LucideIcon = ({ name, className, ...props }) => {
+            const iconMap = {
+                'log-in': 'ri-login-box-line',
+                'alert-circle': 'ri-error-warning-line',
+                'loader-2': 'ri-loader-4-line animate-spin',
+                'x': 'ri-close-line',
+                'plus': 'ri-add-line',
+                'trash-2': 'ri-delete-bin-line',
+                'users': 'ri-group-line',
+                'edit': 'ri-edit-line',
+                'calendar': 'ri-calendar-event-line',
+                'clock': 'ri-time-line',
+                'map-pin': 'ri-map-pin-line',
+                'check-circle-2': 'ri-checkbox-circle-line',
+                'activity': 'ri-pulse-line',
+                'shield': 'ri-shield-user-line',
+                'log-out': 'ri-logout-box-line',
+                'loader-spinner': 'ri-loader-4-line animate-spin',
+                'sun': 'ri-sun-line',
+                'moon': 'ri-moon-line'
+            };
+
+            const remixClass = iconMap[name] || `ri-${name}`;
+            return <i className={cn(remixClass, className)} {...props}></i>;
+        };
+
+        // --- Components ---
+
+        const LoginForm = () => {
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError(null);
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) setError(error.message);
+                setLoading(false);
+            };
+
+            return (
+                <div className="max-w-md mx-auto mt-20 bento-card p-10">
+                    <div className="text-center mb-10">
+                        <div className="w-16 h-16 bg-slate-900 border-2 border-indigo-600 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white shadow-[4px_4px_0px_0px_#7c51a1]">
+                            <LucideIcon name="log-in" className="w-8 h-8" />
+                        </div>
+                        <h2 className="text-4xl font-bold text-slate-900 tracking-tighter italic">เข้าระบบเจ้าหน้าที่</h2>
+                        <p className="text-slate-500 font-bold uppercase text-sm tracking-widest mt-2 px-4 py-1 bg-slate-100 rounded-full inline-block">Secure Protocol Active</p>
+                    </div>
+
+                    <form onSubmit={handleLogin} className="space-y-8">
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-slate-400 uppercase tracking-widest">อีเมล์</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="input-bento"
+                                placeholder="officer@example.com"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-slate-400 uppercase tracking-widest">รหัสผ่าน</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="input-bento"
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
+                        {error && (
+                            <div className="p-4 rounded-2xl bg-red-50 border-2 border-red-900 text-red-900 text-sm font-bold uppercase tracking-wider flex items-start gap-3">
+                                <LucideIcon name="alert-circle" className="w-5 h-5 flex-shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+                        <button type="submit" disabled={loading} className="btn-bento w-full py-4 text-lg shadow-[6px_6px_0px_0px_#7c51a1]">
+                            {loading ? <LucideIcon name="loader-2" className="animate-spin w-6 h-6" /> : "เข้าระบบ"}
+                        </button>
+                    </form>
+                </div>
+            );
+        };
+
+        const TagSelector = ({ selectedTags, setSelectedTags }) => {
+            const [existingTags, setExistingTags] = useState([]);
+            const [tagInput, setTagInput] = useState('');
+            const [showSuggestions, setShowSuggestions] = useState(false);
+
+            useEffect(() => {
+                supabase.from('tags').select('name').order('name')
+                    .then(({ data }) => data && setExistingTags(data.map(t => t.name)));
+            }, []);
+
+            const addTag = (tag) => {
+                const trimmed = tag.trim();
+                if (trimmed && !selectedTags.includes(trimmed)) {
+                    setSelectedTags([...selectedTags, trimmed]);
+                }
+                setTagInput('');
+                setShowSuggestions(false);
+            };
+
+            const removeTag = (tag) => {
+                setSelectedTags(selectedTags.filter(t => t !== tag));
+            };
+
+            const suggestions = existingTags.filter(t => 
+                t.toLowerCase().includes(tagInput.toLowerCase()) && 
+                !selectedTags.includes(t)
+            );
+
+            return (
+                <div className="space-y-2 pt-2 text-left relative">
+                    <label className="block text-sm font-bold text-slate-400 uppercase tracking-widest">แท็ก (ป้ายบอกหมวดหมู่)</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                        {selectedTags.map(tag => (
+                            <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-50 border-2 border-indigo-600 rounded-lg text-indigo-700 text-sm font-bold shadow-[2px_2px_0px_0px_#7c51a1]">
+                                {tag}
+                                <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500">
+                                    <LucideIcon name="x" className="w-3 h-3" />
+                                </button>
+                            </span>
+                        ))}
+                    </div>
+                    <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                            <input
+                                type="text"
+                                value={tagInput}
+                                onChange={(e) => (setTagInput(e.target.value), setShowSuggestions(true))}
+                                onFocus={() => setShowSuggestions(true)}
+                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag(tagInput))}
+                                className="input-bento text-sm"
+                                placeholder="พิมพ์แท็กหรือเลือกจากข้างล่าง..."
+                            />
+                            {showSuggestions && (
+                                <div className="absolute left-0 right-0 top-full mt-2 bg-white border-4 border-slate-900 rounded-xl shadow-[4px_4px_0px_0px_#0f172a] z-50 p-4 max-h-60 overflow-y-auto">
+                                    <p className="text-[12px] font-black text-slate-400 mb-2 uppercase tracking-widest px-2">แท็กยอดนิยม / แท็กที่มีอยู่</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {existingTags.length === 0 ? (
+                                            <p className="text-xs text-slate-400 px-2 italic">ยังไม่มีประวัติแท็ก...</p>
+                                        ) : (
+                                            existingTags.map(t => {
+                                                const isSelected = selectedTags.includes(t);
+                                                return (
+                                                    <button 
+                                                        key={t} 
+                                                        type="button" 
+                                                        disabled={isSelected}
+                                                        onClick={() => addTag(t)}
+                                                        className={cn(
+                                                            "px-3 py-1.5 border-2 rounded-lg text-sm font-bold transition-all",
+                                                            isSelected 
+                                                                ? "bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed" 
+                                                                : "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-slate-900 hover:text-white hover:border-slate-900"
+                                                        )}
+                                                    >
+                                                        {t}
+                                                    </button>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                    {tagInput && !existingTags.includes(tagInput) && (
+                                        <div className="mt-4 pt-4 border-t-2 border-slate-100 italic text-xs text-slate-500 px-2">
+                                            กด Enter หรือกดปุ่ม + เพื่อสร้างแท็กใหม่ "{tagInput}"
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <button type="button" onClick={() => addTag(tagInput)} className="p-2 border-2 border-slate-900 rounded-xl hover:bg-slate-50">
+                            <LucideIcon name="plus" className="w-5 h-5" />
+                        </button>
+                    </div>
+                    {showSuggestions && (
+                        <div className="fixed inset-0 z-40" onClick={() => setShowSuggestions(false)} />
+                    )}
+                </div>
+            );
+        };
+
+        const ActivityForm = ({ onClose, onSuccess, initialData }) => {
+            const [loading, setLoading] = useState(false);
+            const [formData, setFormData] = useState({
+                title: initialData?.title ?? '',
+                description: initialData?.description ?? '',
+                date: initialData?.date ?? '',
+                time: initialData?.time ?? '',
+                place: initialData?.place ?? '',
+                capacity: initialData?.capacity ?? 10,
+                tags: initialData?.tags ?? [],
+            });
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                const { data: { user } } = await supabase.auth.getUser();
+                const payload = { ...formData, created_by: user?.id };
+                
+                let error;
+                if (initialData) {
+                    ({ error } = await supabase.from('activities').update(payload).eq('id', initialData.id));
+                } else {
+                    ({ error } = await supabase.from('activities').insert([payload]));
+                }
+
+                if (!error) {
+                    if (formData.tags.length > 0) {
+                        await supabase.from('tags').upsert(formData.tags.map(name => ({ name })), { onConflict: 'name' });
+                    }
+                    onSuccess();
+                } else {
+                    alert(error.message);
+                }
+                setLoading(false);
+            };
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="w-full max-w-lg bento-card shadow-[8px_8px_0px_0px_#0f172a] overflow-hidden">
+                        <div className="px-8 py-4 border-b-4 border-slate-900 flex items-center justify-between">
+                            <h2 className="text-3xl font-bold">{initialData ? 'เปลี่ยนข้อมูล' : 'กิจกรรมใหม่!'}</h2>
+                            <button onClick={onClose} className="p-2 border-2 border-slate-900 rounded-xl hover:bg-slate-50"><LucideIcon name="x" className="w-6 h-6" /></button>
+                        </div>
+                        <form onSubmit={handleSubmit} className="p-8 space-y-4 max-h-[80vh] overflow-y-auto">
+                            <input required className="input-bento" placeholder="ชื่อกิจกรรม" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+                            <textarea required className="input-bento min-h-[100px]" placeholder="รายละเอียด..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <input type="date" required className="input-bento" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
+                                <input type="time" required className="input-bento" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} />
+                            </div>
+                            <input required className="input-bento" placeholder="สถานที่" value={formData.place} onChange={e => setFormData({ ...formData, place: e.target.value })} />
+                            <input type="number" required className="input-bento" placeholder="จำนวนคน" value={formData.capacity} onChange={e => setFormData({ ...formData, capacity: parseInt(e.target.value) })} />
+                            <TagSelector selectedTags={formData.tags} setSelectedTags={tags => setFormData({ ...formData, tags })} />
+                            <div className="pt-4 flex gap-4">
+                                <button type="button" onClick={onClose} className="flex-1 btn-bento-outline">ยกเลิก</button>
+                                <button type="submit" disabled={loading} className="btn-bento flex-[2]">
+                                    {loading ? <LucideIcon name="loader-2" className="animate-spin w-5 h-5" /> : "บันทึก"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        const GuestList = ({ activityId, activityTitle, onClose }) => {
+            const [registrations, setRegistrations] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [deletingId, setDeletingId] = useState(null);
+
+            const fetch = async () => {
+                const { data } = await supabase.from('registrations').select('*').eq('activity_id', activityId).order('created_at');
+                setRegistrations(data || []);
+                setLoading(false);
+            };
+
+            useEffect(() => { fetch(); }, [activityId]);
+
+            const remove = async (id) => {
+                const { error } = await supabase.from('registrations').delete().eq('id', id);
+                if (!error) setRegistrations(registrations.filter(r => r.id !== id));
+                setDeletingId(null);
+            };
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="bg-white w-full max-w-2xl bento-card flex flex-col h-full max-h-[90vh]">
+                        <div className="px-6 py-4 border-b-4 border-slate-900 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-3xl font-bold">รายชื่อผู้เข้าร่วม</h2>
+                                <p className="text-sm font-bold text-indigo-600 uppercase tracking-widest">กิจกรรม: {activityTitle}</p>
+                            </div>
+                            <button onClick={onClose} className="p-1.5 border-2 border-slate-900 rounded-lg hover:bg-slate-50 transition-colors"><LucideIcon name="x" className="w-5 h-5" /></button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-2">
+                            {loading ? <div className="text-center py-10"><LucideIcon name="loader-2" className="animate-spin w-10 h-10 mx-auto" /></div> : 
+                             registrations.length === 0 ? <p className="text-center py-20 text-slate-400 font-bold">ยังไม่มีผู้ลงทะเบียน</p> :
+                             registrations.map((g, idx) => (
+                                <div key={g.id} className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
+                                    <div className="flex-1 flex gap-4 items-center">
+                                        <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black">{idx + 1}</div>
+                                        <div>
+                                            <p className="text-sm font-bold">{g.name}</p>
+                                            <p className="text-sm font-medium text-slate-500">HN: {g.hn} | โทร: {g.tel}</p>
+                                        </div>
+                                    </div>
+                                    {deletingId === g.id ? (
+                                        <div className="flex gap-1 animate-in fade-in">
+                                            <button onClick={() => remove(g.id)} className="px-2 py-1 bg-red-600 text-white text-sm font-bold rounded border-2 border-slate-900 shadow-[2px_2px_0px_0px_#7f1d1d]">ยืนยัน?</button>
+                                            <button onClick={() => setDeletingId(null)} className="p-1 border-2 border-slate-900 rounded"><LucideIcon name="x" className="w-3 h-3" /></button>
+                                        </div>
+                                    ) : (
+                                        <button onClick={() => setDeletingId(g.id)} className="p-2 text-slate-300 hover:text-red-500"><LucideIcon name="trash-2" className="w-4 h-4" /></button>
+                                    )}
+                                </div>
+                             ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const OfficerDashboard = () => {
+            const [activities, setActivities] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [showForm, setShowForm] = useState(false);
+            const [editingActivity, setEditingActivity] = useState(null);
+            const [viewingGuestsId, setViewingGuestsId] = useState(null);
+            const [deletingId, setDeletingId] = useState(null);
+
+            const fetch = async () => {
+                const { data } = await supabase.from('activities').select('*').order('date', { ascending: true });
+                setActivities(data || []);
+                setLoading(false);
+            };
+
+            useEffect(() => { fetch(); }, []);
+
+            const remove = async (id) => {
+                await supabase.from('activities').delete().eq('id', id);
+                setActivities(activities.filter(a => a.id !== id));
+                setDeletingId(null);
+            };
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-end mb-8">
+                        <div>
+                            <p className="text-sm font-bold text-indigo-600 uppercase tracking-widest">จัดการกิจกรรม</p>
+                            <h1 className="text-4xl font-bold tracking-tighter">กระดานกิจกรรม</h1>
+                        </div>
+                        <button onClick={() => (setEditingActivity(null), setShowForm(true))} className="btn-bento"><LucideIcon name="plus" /> กิจกรรมใหม่!</button>
+                    </div>
+
+                    {loading ? <div className="text-center py-20"><LucideIcon name="loader-2" className="animate-spin w-10 h-10 mx-auto" /></div> :
+                     activities.map(a => (
+                        <div key={a.id} className="bento-card p-5 md:flex items-center justify-between gap-6">
+                            <div className="flex-1 space-y-2">
+                                <div className="flex items-center flex-wrap gap-2 text-left">
+                                    <h3 className="text-xl font-bold">{a.title}</h3>
+                                    {a.tags?.map(t => <span key={t} className="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-sm font-bold rounded border">#{t}</span>)}
+                                    <span className="status-badge bg-slate-900 text-white ml-auto md:ml-0">{a.capacity} จำกัด</span>
+                                </div>
+                                <p className="text-slate-600 font-bold text-base leading-snug line-clamp-2 text-left">{a.description}</p>
+                                <div className="flex flex-wrap gap-4 text-sm font-bold text-slate-500">
+                                    <div className="flex items-center gap-1.5"><LucideIcon name="calendar" className="w-4 h-4 text-indigo-600" /> {formatDate(a.date)}</div>
+                                    <div className="flex items-center gap-1.5"><LucideIcon name="clock" className="w-4 h-4 text-indigo-600" /> {a.time}</div>
+                                    <div className="flex items-center gap-1.5"><LucideIcon name="map-pin" className="w-4 h-4 text-indigo-600" /> {a.place}</div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 mt-4 md:mt-0">
+                                <button onClick={() => setViewingGuestsId(a.id)} className="btn-bento-outline py-1.5 px-4 text-sm font-bold"><LucideIcon name="users" className="w-4 h-4" /> รายชื่อ</button>
+                                <button onClick={() => (setEditingActivity(a), setShowForm(true))} className="p-2 border-2 rounded-xl shadow-[2px_2px_0px_0px_#0f172a]"><LucideIcon name="edit" className="w-4 h-4" /></button>
+                                {deletingId === a.id ? (
+                                    <div className="flex gap-1 animate-in slide-in-from-right-2">
+                                        <button onClick={() => remove(a.id)} className="px-3 py-2 bg-red-600 text-white text-sm uppercase rounded-xl border-2 shadow-[2px_2px_0px_0px_#7f1d1d]">ยืนยันลบ?</button>
+                                        <button onClick={() => setDeletingId(null)} className="p-2 bg-white border-2 rounded-xl"><LucideIcon name="x" className="w-4 h-4" /></button>
+                                    </div>
+                                ) : (
+                                    <button onClick={() => setDeletingId(a.id)} className="p-2 bg-red-50 border-2 border-red-900 rounded-xl text-red-900 shadow-[2px_2px_0px_0px_#7f1d1d]"><LucideIcon name="trash-2" className="w-4 h-4" /></button>
+                                )}
+                            </div>
+                        </div>
+                     ))}
+                     {showForm && <ActivityForm initialData={editingActivity} onClose={() => setShowForm(false)} onSuccess={() => (setShowForm(false), fetch())} />}
+                     {viewingGuestsId && <GuestList activityId={viewingGuestsId} activityTitle={activities.find(a => a.id === viewingGuestsId)?.title} onClose={() => setViewingGuestsId(null)} />}
+                </div>
+            );
+        };
+
+        const RegistrationForm = ({ activity, onClose, onSuccess }) => {
+            const [loading, setLoading] = useState(false);
+            const [success, setSuccess] = useState(false);
+            const [formData, setFormData] = useState({ name: '', hn: '', tel: '' });
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                const { count } = await supabase.from('registrations').select('*', { count: 'exact', head: true }).eq('activity_id', activity.id);
+                if (count >= activity.capacity) { alert('ขออภัย กิจกรรมนี้เต็มแล้ว'); setLoading(false); return; }
+                const { error } = await supabase.from('registrations').insert([{ ...formData, activity_id: activity.id }]);
+                if (!error) { setSuccess(true); setTimeout(onSuccess, 1500); } else alert(error.message);
+                setLoading(false);
+            };
+
+            if (success) return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="bg-white p-10 bento-card border-slate-900 shadow-[10px_10px_0px_0px_#16a34a] flex flex-col items-center gap-6 text-center animate-in zoom-in">
+                        <div className="w-20 h-20 bg-green-100 border-4 border-green-600 rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_#16a34a]"><LucideIcon name="check-circle-2" className="w-12 h-12 text-green-600" /></div>
+                        <h2 className="text-4xl font-bold italic">ลงชื่อสำเร็จ!</h2>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="w-full max-w-md bento-card shadow-[8px_8px_0px_0px_#0f172a] overflow-hidden">
+                        <div className="px-8 py-6 border-b-4 border-slate-900 bg-indigo-600 text-white flex justify-between">
+                            <div><h2 className="text-3xl font-bold italic">ลงชื่อกิจกรรม</h2><p className="text-sm">{activity.title}</p></div>
+                            <button onClick={onClose}><LucideIcon name="x" className="w-6 h-6" /></button>
+                        </div>
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                            <input required className="input-bento" placeholder="ชื่อ-นามสกุล" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                            <input required className="input-bento" placeholder="HN (ตัวเลข)" value={formData.hn} onChange={e => setFormData({ ...formData, hn: e.target.value.replace(/\D/g, '') })} />
+                            <input required className="input-bento" placeholder="เบอร์โทรศัพท์" value={formData.tel} onChange={e => setFormData({ ...formData, tel: e.target.value.replace(/\D/g, '') })} />
+                            <button type="submit" disabled={loading} className="btn-bento w-full">{loading ? <LucideIcon name="loader-2" className="animate-spin" /> : "ยืนยันการลงทะเบียน"}</button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        const GuestPublicList = ({ activityId, activityTitle, onClose }) => {
+            const [guests, setGuests] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                supabase.from('registrations').select('name').eq('activity_id', activityId).order('created_at')
+                    .then(({ data }) => (setGuests(data || []), setLoading(false)));
+            }, [activityId]);
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="w-full max-w-md bento-card overflow-hidden h-full max-h-[80vh] flex flex-col">
+                        <div className="px-8 py-4 border-b-4 bg-indigo-100 flex justify-between items-center">
+                            <div><h3 className="text-2xl font-bold">เพื่อนที่ร่วมทาง</h3><p className="text-sm uppercase font-bold text-indigo-600">{activityTitle}</p></div>
+                            <button onClick={onClose} className="p-1 border-2 rounded-xl"><LucideIcon name="x" className="w-5 h-5" /></button>
+                        </div>
+                        <div className="p-6 overflow-y-auto space-y-3">
+                            {loading ? <LucideIcon name="loader-2" className="animate-spin mx-auto w-8 h-8" /> : 
+                             guests.length === 0 ? <p className="text-center text-slate-400 font-bold">ยังไม่มีเพื่อนร่วมกิจกรรม</p> :
+                             guests.map((g, i) => (
+                                    <div key={i} className="p-4 border-4 border-slate-900 rounded-2xl flex items-center gap-4 bg-white shadow-[4px_4px_0px_0px_#0f172a]">
+                                    <div className="text-lg font-black text-slate-900">#{i + 1}</div>
+                                    <p className="text-xl font-bold text-slate-900 tracking-tight">{maskThaiName(g.name)}</p>
+                                </div>
+                             ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const GuestView = () => {
+            const [activities, setActivities] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [registeringId, setRegisteringId] = useState(null);
+            const [viewingId, setViewingId] = useState(null);
+            const [selectedTag, setSelectedTag] = useState(null);
+            
+            // New filters
+            const [timeRange, setTimeRange] = useState('all'); // 'all' or 'month'
+            const [selectedDays, setSelectedDays] = useState([]); // 0=อาทิตย์, 1=จันทร์...
+            const [selectedPeriods, setSelectedPeriods] = useState([]); // 'morning', 'afternoon'
+
+            const fetch = async () => {
+                const today = new Date().toISOString().split('T')[0];
+                const { data: acts } = await supabase.from('activities').select('*').gte('date', today).order('date');
+                const { data: counts } = await supabase.from('registrations').select('activity_id');
+                const countMap = counts?.reduce((acc, curr) => (acc[curr.activity_id] = (acc[curr.activity_id] || 0) + 1, acc), {}) || {};
+                setActivities(acts?.map(a => ({ ...a, regCount: countMap[a.id] || 0 })) || []);
+                setLoading(false);
+            };
+
+            useEffect(() => { fetch(); }, []);
+
+            const allTags = useMemo(() => Array.from(new Set(activities.flatMap(a => a.tags || []))).sort(), [activities]);
+            
+            const filtered = useMemo(() => {
+                return activities.filter(a => {
+                    // Tag filter
+                    if (selectedTag && !(a.tags || []).includes(selectedTag)) return false;
+
+                    // Time range filter (1 month)
+                    if (timeRange === 'month') {
+                        const actDate = new Date(a.date);
+                        const oneMonthLater = new Date();
+                        oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+                        if (actDate > oneMonthLater) return false;
+                    }
+
+                    // Day of Week filter
+                    if (selectedDays.length > 0) {
+                        const day = new Date(a.date).getDay();
+                        if (!selectedDays.includes(day)) return false;
+                    }
+
+                    // Time of Day filter
+                    if (selectedPeriods.length > 0) {
+                        const [hour] = a.time.split(':').map(Number);
+                        const period = hour < 12 ? 'morning' : 'afternoon';
+                        if (!selectedPeriods.includes(period)) return false;
+                    }
+
+                    return true;
+                });
+            }, [activities, selectedTag, timeRange, selectedDays, selectedPeriods]);
+
+            const days = [
+                { id: 1, label: 'จ' }, { id: 2, label: 'อ' }, { id: 3, label: 'พ' },
+                { id: 4, label: 'พฤ' }, { id: 5, label: 'ศ' }, { id: 6, label: 'ส' }, { id: 0, label: 'อา' }
+            ];
+
+            const toggleDay = (dayId) => {
+                setSelectedDays(prev => 
+                    prev.includes(dayId) ? prev.filter(d => d !== dayId) : [...prev, dayId]
+                );
+            };
+
+            const togglePeriod = (p) => {
+                setSelectedPeriods(prev => 
+                    prev.includes(p) ? prev.filter(item => item !== p) : [...prev, p]
+                );
+            };
+
+            return (
+                <div className="space-y-10">
+                     <section className="text-center space-y-6 pt-12 pb-6">
+                        <div className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-700 border-2 border-indigo-700 rounded-full text-sm font-bold uppercase tracking-[0.3em] mb-4">ใจร่ม ๆ 5G ช้า...</div>
+                        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-[0.9]">ชวนมาจอย<span className="text-indigo-600"> ไม่คอยเหงา</span></h1>
+                        <p className="text-slate-500 max-w-2xl mx-auto text-xl font-medium tracking-tight">มาสนุกด้วยกันนะ! เลือกกิจกรรมที่คุณสนใจ แล้วมาเป็นส่วนหนึ่งของครอบครัวเรา</p>
+                    </section>
+
+                    {/* Filter Section */}
+                    <div className="bento-card p-6 space-y-6 bg-slate-50/50">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {/* Time Range */}
+                            <div className="space-y-3">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block text-left">ช่วงเวลา</label>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => setTimeRange('all')}
+                                        className={cn(
+                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all",
+                                            timeRange === 'all' ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200"
+                                        )}
+                                    >ทุกกิจกรรม</button>
+                                    <button 
+                                        onClick={() => setTimeRange('month')}
+                                        className={cn(
+                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all",
+                                            timeRange === 'month' ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-200"
+                                        )}
+                                    >ภายใน 1 เดือน</button>
+                                </div>
+                            </div>
+
+                            {/* Days of Week */}
+                            <div className="space-y-3">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block text-left">วันในสัปดาห์</label>
+                                <div className="flex justify-between gap-1">
+                                    {days.map(d => (
+                                        <button 
+                                            key={d.id}
+                                            onClick={() => toggleDay(d.id)}
+                                            className={cn(
+                                                "w-10 h-10 rounded-lg border-2 flex items-center justify-center font-bold transition-all text-sm",
+                                                selectedDays.includes(d.id) ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-500 border-slate-200"
+                                            )}
+                                        >{d.label}</button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Period of Day */}
+                            <div className="space-y-3">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block text-left">ช่วงวัน</label>
+                                <div className="flex gap-2 text-left">
+                                    <button 
+                                        onClick={() => togglePeriod('morning')}
+                                        className={cn(
+                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all flex items-center justify-center gap-2",
+                                            selectedPeriods.includes('morning') ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-200"
+                                        )}
+                                    ><LucideIcon name="sun" className="w-5 h-5" /> เช้า</button>
+                                    <button 
+                                        onClick={() => togglePeriod('afternoon')}
+                                        className={cn(
+                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all flex items-center justify-center gap-2",
+                                            selectedPeriods.includes('afternoon') ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-200"
+                                        )}
+                                    ><LucideIcon name="moon" className="w-5 h-5" /> บ่าย</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tag Filter */}
+                        <div className="pt-4 border-t-2 border-slate-200">
+                             <div className="flex flex-wrap items-center gap-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">หมวดหมู่:</label>
+                                <button onClick={() => setSelectedTag(null)} className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all", !selectedTag ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200")}>ทั้งหมด</button>
+                                {allTags.map(t => (
+                                    <button key={t} onClick={() => setSelectedTag(t)} className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all", selectedTag === t ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-indigo-500 border-indigo-100")}>#{t}</button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        {loading ? <LucideIcon name="loader-2" className="animate-spin mx-auto w-10 h-10 col-span-full" /> :
+                         filtered.map(a => {
+                            const isFull = a.regCount >= a.capacity;
+                            return (
+                                <div key={a.id} className="bento-card group flex flex-col hover:shadow-[6px_6px_0px_0px_#0f172a]">
+                                    <div className="p-6 flex-1 space-y-4">
+                                        <div className="flex justify-between items-start gap-3">
+                                            <div className="text-left"><h3 className="text-2xl font-bold group-hover:text-indigo-600 leading-tight">{a.title}</h3><div className="flex gap-1 flex-wrap mt-1">{a.tags?.map(t => <span key={t} className="text-sm font-bold text-indigo-500">#{t}</span>)}</div></div>
+                                            <span className={cn("status-badge shrink-0", isFull ? "bg-red-100 text-red-700" : "bg-indigo-50 text-indigo-700")}>{isFull ? "ปิดสมัคร" : "ว่าง"}</span>
+                                        </div>
+                                        <p className="text-slate-600 font-bold text-base line-clamp-3 text-left leading-snug">{a.description}</p>
+                                        <div className="space-y-3 pt-4 border-t-2">
+                <div className="flex items-center gap-3 text-[14px] font-bold"><LucideIcon name="calendar" className="w-4 h-4 text-indigo-600" /> {formatDate(a.date)}</div>
+                                            <div className="flex items-center gap-3 text-[14px] font-bold"><LucideIcon name="clock" className="w-4 h-4 text-indigo-600" /> {a.time}</div>
+                                            <div className="flex items-center gap-3 text-[14px] font-bold"><LucideIcon name="map-pin" className="w-4 h-4 text-indigo-600" /> {a.place}</div>
+                                        </div>
+                                        <div className="pt-4 border-t-2 space-y-2">
+                                            <div className="flex justify-between text-sm font-bold"><p>จำนวนคน</p><p>{a.regCount} / {a.capacity}</p></div>
+                                            <div className="h-3 w-full bg-slate-100 border-2 border-slate-900 rounded-full overflow-hidden"><div className={cn("h-full transition-all", isFull ? "bg-red-500" : "bg-indigo-600")} style={{width: `${(a.regCount/a.capacity)*100}%`}} /></div>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 pt-0 flex flex-col gap-3">
+                                        <button onClick={() => setViewingId(a.id)} className="text-sm font-bold text-indigo-600 uppercase tracking-widest hover:underline">ดูรายชื่อเพื่อน ๆ →</button>
+                                        <button disabled={isFull} onClick={() => setRegisteringId(a.id)} className={cn("btn-bento w-full py-4", isFull ? "bg-slate-100 text-slate-400 border-slate-200 shadow-none" : "")}>{isFull ? "ปิดรับสมัคร" : "เข้าร่วมกิจกรรม"}</button>
+                                    </div>
+                                </div>
+                            );
+                         })}
+                    </div>
+                    {registeringId && <RegistrationForm activity={activities.find(a => a.id === registeringId)} onClose={() => setRegisteringId(null)} onSuccess={() => (setRegisteringId(null), fetch())} />}
+                    {viewingId && <GuestPublicList activityId={viewingId} activityTitle={activities.find(a => a.id === viewingId)?.title} onClose={() => setViewingId(null)} />}
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [view, setView] = useState('guest');
+            const [user, setUser] = useState(null);
+            const [loadingAuth, setLoadingAuth] = useState(true);
+
+            useEffect(() => {
+                supabase.auth.getSession().then(({ data: { session } }) => (setUser(session?.user ?? null), setLoadingAuth(false)));
+                const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
+                return () => subscription.unsubscribe();
+            }, []);
+
+            if (loadingAuth) return <div className="flex min-h-screen items-center justify-center"><LucideIcon name="loader-2" className="w-10 h-10 animate-spin text-indigo-600" /></div>;
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    <nav className="bg-white border-b-4 border-slate-900 px-6 py-4 flex justify-between items-center sticky top-0 z-40 bg-white/95 backdrop-blur-md">
+                        <div className="text-2xl font-bold uppercase tracking-tighter flex items-center gap-3">
+                            <div className="p-2 bg-indigo-600 rounded-lg border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]"><LucideIcon name="activity" className="text-white w-5 h-5" /></div>
+                            <span className="hidden sm:inline">Elderly Activity System</span>
+                            <span className="sm:hidden font-bold text-lg">EAS</span>
+                        </div>
+                        <div className="flex gap-4">
+                            <button onClick={() => setView(view === 'guest' ? 'officer' : 'guest')} className="btn-bento-outline text-sm font-bold py-1.5 px-4"><LucideIcon name={view === 'guest' ? 'shield' : 'users'} className="w-4 h-4" /> {view === 'guest' ? 'เจ้าหน้าที่' : 'หน้าหลัก'}</button>
+                            {user && <button onClick={() => supabase.auth.signOut()} className="btn-bento bg-red-50 !text-red-900 border-red-900 shadow-[2px_2px_0px_0px_#7f1d1d] text-sm font-bold py-1.5 px-4"><LucideIcon name="log-out" className="w-4 h-4" /> ออก</button>}
+                        </div>
+                    </nav>
+                    <main className="flex-1 container mx-auto px-4 md:px-8 py-10">
+                        {view === 'guest' ? <GuestView /> : (user ? <OfficerDashboard /> : <LoginForm />)}
+                    </main>
+                    <footer className="border-t-4 border-slate-900 py-10 text-center font-bold text-sm uppercase tracking-[0.4em] text-slate-300">
+                        &copy; 2024 Elderly Community Hub . Secure System Managed
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
