@@ -639,10 +639,24 @@
         const GuestPublicList = ({ activityId, activityTitle, onClose }) => {
             const [guests, setGuests] = useState([]);
             const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
 
             useEffect(() => {
-                supabase.from('registrations').select('name').eq('activity_id', activityId).order('created_at')
-                    .then(({ data }) => (setGuests(data || []), setLoading(false)));
+                const fetchGuests = async () => {
+                    const { data, fetchError } = await supabase
+                        .from('guest_registration_list')
+                        .select('name')
+                        .eq('activity_id', activityId)
+                        .order('created_at');
+                    
+                    if (fetchError) {
+                        console.error('Guest List Error:', fetchError);
+                        setError(fetchError.message);
+                    }
+                    setGuests(data || []);
+                    setLoading(false);
+                };
+                fetchGuests();
             }, [activityId]);
 
             return (
@@ -654,7 +668,8 @@
                         </div>
                         <div className="p-6 overflow-y-auto space-y-3">
                             {loading ? <LucideIcon name="loader-2" className="animate-spin mx-auto w-8 h-8" /> : 
-                             guests.length === 0 ? <p className="text-center text-slate-400 font-bold">ยังไม่มีเพื่อนร่วมกิจกรรม</p> :
+                             error ? <p className="text-center text-red-500 font-bold p-10 bg-red-50 rounded-2xl border-2 border-red-200">ขออภัย! ไม่สามารถดึงข้อมูลได้<br/><span className="text-[10px] opacity-50 font-normal">{error}</span></p> :
+                             guests.length === 0 ? <p className="text-center text-slate-400 font-bold py-20">ยังไม่มีเพื่อนร่วมกิจกรรม</p> :
                              guests.map((g, i) => (
                                     <div key={i} className="p-4 border-4 border-slate-900 rounded-2xl flex items-center gap-4 bg-white shadow-[4px_4px_0px_0px_#0f172a]">
                                     <div className="text-lg font-black text-slate-900">#{i + 1}</div>
@@ -681,10 +696,28 @@
 
             const fetch = async () => {
                 const today = new Date().toISOString().split('T')[0];
-                const { data: acts } = await supabase.from('activities').select('*').gte('date', today).order('date');
-                const { data: counts } = await supabase.from('registrations').select('activity_id');
-                const countMap = counts?.reduce((acc, curr) => (acc[curr.activity_id] = (acc[curr.activity_id] || 0) + 1, acc), {}) || {};
-                setActivities(acts?.map(a => ({ ...a, regCount: countMap[a.id] || 0 })) || []);
+                const { data: acts, error: actError } = await supabase
+                    .from('activities')
+                    .select('*')
+                    .gte('date', today)
+                    .order('date');
+                
+                if (actError) console.error('Acts Error:', actError);
+
+                if (acts && acts.length > 0) {
+                    const actIds = acts.map(a => a.id);
+                    const { data: counts, error: countError } = await supabase
+                        .from('guest_registration_list')
+                        .select('activity_id')
+                        .in('activity_id', actIds);
+                    
+                    if (countError) console.error('Count Error:', countError);
+
+                    const countMap = counts?.reduce((acc, curr) => (acc[curr.activity_id] = (acc[curr.activity_id] || 0) + 1, acc), {}) || {};
+                    setActivities(acts.map(a => ({ ...a, regCount: countMap[a.id] || 0 })));
+                } else {
+                    setActivities([]);
+                }
                 setLoading(false);
             };
 
@@ -752,19 +785,19 @@
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {/* Time Range */}
                             <div className="space-y-3">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block text-left">ช่วงเวลา</label>
+                                <label className="text-sm font-black text-slate-500 uppercase tracking-widest block text-left">ช่วงเวลา</label>
                                 <div className="flex gap-2">
                                     <button 
                                         onClick={() => setTimeRange('all')}
                                         className={cn(
-                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all",
+                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all text-base",
                                             timeRange === 'all' ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200"
                                         )}
                                     >ทุกกิจกรรม</button>
                                     <button 
                                         onClick={() => setTimeRange('month')}
                                         className={cn(
-                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all",
+                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all text-base",
                                             timeRange === 'month' ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-200"
                                         )}
                                     >ภายใน 1 เดือน</button>
@@ -773,14 +806,14 @@
 
                             {/* Days of Week */}
                             <div className="space-y-3">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block text-left">วันในสัปดาห์</label>
+                                <label className="text-sm font-black text-slate-500 uppercase tracking-widest block text-left">วันในสัปดาห์</label>
                                 <div className="flex justify-between gap-1">
                                     {days.map(d => (
                                         <button 
                                             key={d.id}
                                             onClick={() => toggleDay(d.id)}
                                             className={cn(
-                                                "w-10 h-10 rounded-lg border-2 flex items-center justify-center font-bold transition-all text-sm",
+                                                "w-12 h-12 rounded-lg border-2 flex items-center justify-center font-bold transition-all text-base",
                                                 selectedDays.includes(d.id) ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-500 border-slate-200"
                                             )}
                                         >{d.label}</button>
@@ -790,19 +823,19 @@
 
                             {/* Period of Day */}
                             <div className="space-y-3">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block text-left">ช่วงวัน</label>
+                                <label className="text-sm font-black text-slate-500 uppercase tracking-widest block text-left">ช่วงวัน</label>
                                 <div className="flex gap-2 text-left">
                                     <button 
                                         onClick={() => togglePeriod('morning')}
                                         className={cn(
-                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all flex items-center justify-center gap-2",
+                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all flex items-center justify-center gap-2 text-base",
                                             selectedPeriods.includes('morning') ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-200"
                                         )}
                                     ><LucideIcon name="sun" className="w-5 h-5" /> เช้า</button>
                                     <button 
                                         onClick={() => togglePeriod('afternoon')}
                                         className={cn(
-                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all flex items-center justify-center gap-2",
+                                            "flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all flex items-center justify-center gap-2 text-base",
                                             selectedPeriods.includes('afternoon') ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-200"
                                         )}
                                     ><LucideIcon name="moon" className="w-5 h-5" /> บ่าย</button>
@@ -813,10 +846,10 @@
                         {/* Tag Filter */}
                         <div className="pt-4 border-t-2 border-slate-200">
                              <div className="flex flex-wrap items-center gap-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">หมวดหมู่:</label>
-                                <button onClick={() => setSelectedTag(null)} className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all", !selectedTag ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200")}>ทั้งหมด</button>
+                                <label className="text-sm font-black text-slate-500 uppercase tracking-widest mr-2">หมวดหมู่:</label>
+                                <button onClick={() => setSelectedTag(null)} className={cn("px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all", !selectedTag ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200")}>ทั้งหมด</button>
                                 {allTags.map(t => (
-                                    <button key={t} onClick={() => setSelectedTag(t)} className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all", selectedTag === t ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-indigo-500 border-indigo-100")}>#{t}</button>
+                                    <button key={t} onClick={() => setSelectedTag(t)} className={cn("px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all", selectedTag === t ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-indigo-500 border-indigo-100")}>#{t}</button>
                                 ))}
                             </div>
                         </div>
@@ -826,12 +859,13 @@
                         {loading ? <LucideIcon name="loader-2" className="animate-spin mx-auto w-10 h-10 col-span-full" /> :
                          filtered.map(a => {
                             const isFull = a.regCount >= a.capacity;
+                            const isNearFull = !isFull && (a.regCount / a.capacity >= 0.8);
                             return (
                                 <div key={a.id} className="bento-card group flex flex-col hover:shadow-[6px_6px_0px_0px_#0f172a]">
                                     <div className="p-6 flex-1 space-y-4">
                                         <div className="flex justify-between items-start gap-3">
                                             <div className="text-left"><h3 className="text-2xl font-bold group-hover:text-indigo-600 leading-tight">{a.title}</h3><div className="flex gap-1 flex-wrap mt-1">{a.tags?.map(t => <span key={t} className="text-sm font-bold text-indigo-500">#{t}</span>)}</div></div>
-                                            <span className={cn("status-badge shrink-0", isFull ? "bg-red-100 text-red-700" : "bg-indigo-50 text-indigo-700")}>{isFull ? "ปิดสมัคร" : "ว่าง"}</span>
+                                            <span className={cn("status-badge shrink-0", isFull ? "bg-red-100 text-red-700" : isNearFull ? "bg-orange-100 text-orange-700 border-orange-200" : "bg-indigo-50 text-indigo-700")}>{isFull ? "ปิดสมัคร" : isNearFull ? "ใกล้เต็ม" : "ว่าง"}</span>
                                         </div>
                                         <p className="text-slate-600 font-bold text-base line-clamp-3 text-left leading-snug">{a.description}</p>
                                         <div className="space-y-3 pt-4 border-t-2">
@@ -840,8 +874,14 @@
                                             <div className="flex items-center gap-3 text-[14px] font-bold"><LucideIcon name="map-pin" className="w-4 h-4 text-indigo-600" /> {a.place}</div>
                                         </div>
                                         <div className="pt-4 border-t-2 space-y-2">
-                                            <div className="flex justify-between text-sm font-bold"><p>จำนวนคน</p><p>{a.regCount} / {a.capacity}</p></div>
-                                            <div className="h-3 w-full bg-slate-100 border-2 border-slate-900 rounded-full overflow-hidden"><div className={cn("h-full transition-all", isFull ? "bg-red-500" : "bg-indigo-600")} style={{width: `${(a.regCount/a.capacity)*100}%`}} /></div>
+                                            <div className="flex justify-between text-sm font-bold">
+                                                <p>จำนวนคน</p>
+                                                <p className={isNearFull ? "text-orange-600" : ""}>{isNearFull && "รีบเลย! "} {a.regCount} / {a.capacity}</p>
+                                            </div>
+                                            <div className="h-3 w-full bg-slate-100 border-2 border-slate-900 rounded-full overflow-hidden">
+                                                <div className={cn("h-full transition-all", isFull ? "bg-red-500" : isNearFull ? "bg-orange-500" : "bg-indigo-600")} style={{width: `${(a.regCount/a.capacity)*100}%`}} />
+                                            </div>
+                                            {isNearFull && <p className="text-[10px] font-black italic text-orange-600 text-center uppercase tracking-widest animate-pulse">ใกล้เต็มแล้ว!</p>}
                                         </div>
                                     </div>
                                     <div className="p-5 pt-0 flex flex-col gap-3">
@@ -876,7 +916,7 @@
                     <nav className="bg-white border-b-4 border-slate-900 px-6 py-4 flex justify-between items-center sticky top-0 z-40 bg-white/95 backdrop-blur-md">
                         <div className="text-2xl font-bold uppercase tracking-tighter flex items-center gap-3">
                             <div className="p-2 bg-indigo-600 rounded-lg border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]"><LucideIcon name="activity" className="text-white w-5 h-5" /></div>
-                            <span className="hidden sm:inline">Elderly Activity System</span>
+                            <span className="hidden sm:inline">สธ.4 ActiHub</span>
                             <span className="sm:hidden font-bold text-lg">EAS</span>
                         </div>
                         <div className="flex gap-4">
@@ -888,7 +928,7 @@
                         {view === 'guest' ? <GuestView /> : (user ? <OfficerDashboard /> : <LoginForm />)}
                     </main>
                     <footer className="border-t-4 border-slate-900 py-10 text-center font-bold text-sm uppercase tracking-[0.4em] text-slate-300">
-                        &copy; 2024 Elderly Community Hub . Secure System Managed
+                        &copy; 2026 MDCU-KCMH Geriatric Excellence Center. All Rights Reserved.
                     </footer>
                 </div>
             );
