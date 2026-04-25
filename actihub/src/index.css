@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Itim&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Itim", ui-sans-serif, system-ui, sans-serif;
+  
+  --radius-3xl: 1.25rem;
+  --radius-2xl: 0.875rem;
+  --radius-xl: 0.625rem;
+
+  --color-bento-border: #0f172a;
+  --color-indigo-50: #f6f4f9;
+  --color-indigo-100: #efeaf4;
+  --color-indigo-600: #7c51a1;
+  --color-indigo-700: #6a448a;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900 leading-tight;
+  }
+}
+
+@layer components {
+  .bento-card {
+    @apply bg-white border-2 border-bento-border rounded-2xl shadow-[4px_4px_0px_0px_#0f172a] transition-all;
+  }
+
+  .btn-bento {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-bold rounded-xl transition-all hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
+  }
+
+  .btn-bento-outline {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border-2 border-bento-border text-slate-900 font-bold rounded-xl transition-all hover:bg-slate-50 active:scale-95;
+  }
+
+  .status-badge {
+    @apply px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2;
+  }
+}
+
+/* Darker Grays */
+.text-slate-400 { color: #64748b !important; }
+.text-slate-300 { color: #94a3b8 !important; }
+.text-slate-500 { color: #475569 !important; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-900 rounded-full border-2 border-slate-100;
+}
